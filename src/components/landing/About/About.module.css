@@ -1,0 +1,12 @@
+.about-container {
+  height: fit-content;
+  color: #293737;
+  background-color: #d5dbdb;
+  padding: 30px 40px;
+}
+
+@media (min-width: 1440px) {
+  .about-container {
+    padding: 30px 160px;
+  }
+}
