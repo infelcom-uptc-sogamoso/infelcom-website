@@ -11,7 +11,7 @@ export const getResearcherById = async (code: string): Promise<IResearcher | nul
   if (!isValidObjectId) return null;
 
   await db.connect();
-  const researcher = await Researcher.findOne({ code }).lean();
+  const researcher = await Researcher.findOne({ code }).lean().maxTimeMS(5000);;
   await db.disconnect();
 
   if (!researcher) {
