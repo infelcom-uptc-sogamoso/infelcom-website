@@ -7,11 +7,11 @@ interface ProjectCode {
   code: string;
 }
 
-export const getProjectById = async (code: string): Promise<IProject | null> => {
+export const getProjectById = async (_id: string): Promise<IProject | null> => {
   if (!isValidObjectId) return null;
 
   await db.connect();
-  const project = await Project.findOne({ code }).lean();
+  const project = await Project.findOne({ _id }).lean();
   await db.disconnect();
 
   if (!project) {
