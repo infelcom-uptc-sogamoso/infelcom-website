@@ -15,9 +15,21 @@ import { formatDate } from '@/utils';
 const ResearchersPage = () => {
   const { toogleSnackbar } = useContext(UiContext);
   const { data: researchersData, error: researchersError } =
-    useSWR<IResearcher[]>('/api/admin/researchers');
-  const { data: storiesData, error: storiesError } = useSWR<IStory[]>('/api/admin/stories');
-  const { data: projectsData, error: projectsError } = useSWR<IProject[]>('/api/admin/projects');
+    useSWR<IResearcher[]>('/api/admin/researchers', {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      refreshInterval: 0,
+    });
+  const { data: storiesData, error: storiesError } = useSWR<IStory[]>('/api/admin/stories', {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    refreshInterval: 0,
+  });
+  const { data: projectsData, error: projectsError } = useSWR<IProject[]>('/api/admin/projects', {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    refreshInterval: 0,
+  });
 
   const deleteResearcher = async (id: String) => {
     try {
