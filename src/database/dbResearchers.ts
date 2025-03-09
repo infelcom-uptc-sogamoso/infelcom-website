@@ -8,7 +8,7 @@ interface ResearcherCode {
 }
 
 export const getResearcherById = async (_id: string): Promise<IResearcher | null> => {
-  if (!isValidObjectId) return null;
+  if (!isValidObjectId(_id)) return null;
 
   await db.connect();
   const researcher = await Researcher.findOne({ _id }).lean();
