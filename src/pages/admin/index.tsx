@@ -15,9 +15,21 @@ import { formatDate } from '@/utils';
 const ResearchersPage = () => {
   const { toogleSnackbar } = useContext(UiContext);
   const { data: researchersData, error: researchersError } =
-    useSWR<IResearcher[]>('/api/admin/researchers');
-  const { data: storiesData, error: storiesError } = useSWR<IStory[]>('/api/admin/stories');
-  const { data: projectsData, error: projectsError } = useSWR<IProject[]>('/api/admin/projects');
+    useSWR<IResearcher[]>('/api/admin/researchers', {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      refreshInterval: 0,
+    });
+  const { data: storiesData, error: storiesError } = useSWR<IStory[]>('/api/admin/stories', {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    refreshInterval: 0,
+  });
+  const { data: projectsData, error: projectsError } = useSWR<IProject[]>('/api/admin/projects', {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    refreshInterval: 0,
+  });
 
   const deleteResearcher = async (id: String) => {
     try {
@@ -72,7 +84,7 @@ const ResearchersPage = () => {
         return (
           <div className="actions-container">
             <Tooltip title="Editar">
-              <NextLink href={`/admin/researchers/${row?.code}`} passHref>
+              <NextLink href={`/admin/researchers/${row?._id}`} passHref>
                 <Link underline="always">
                   <IconButton aria-label="edit" color="warning">
                     <EditIcon />
@@ -107,7 +119,7 @@ const ResearchersPage = () => {
         return (
           <div className="actions-container">
             <Tooltip title="Editar">
-              <NextLink href={`/admin/projects/${row?.code}`} passHref>
+              <NextLink href={`/admin/projects/${row?._id}`} passHref>
                 <Link underline="always">
                   <IconButton aria-label="edit" color="warning">
                     <EditIcon />
@@ -153,7 +165,7 @@ const ResearchersPage = () => {
         return (
           <div className="actions-container">
             <Tooltip title="Editar">
-              <NextLink href={`/admin/stories/${row?.code}`} passHref>
+              <NextLink href={`/admin/stories/${row?._id}`} passHref>
                 <Link underline="always">
                   <IconButton aria-label="edit" color="warning">
                     <EditIcon />

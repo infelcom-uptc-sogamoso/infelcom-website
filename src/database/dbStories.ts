@@ -7,11 +7,11 @@ interface StoryCode {
   code: string;
 }
 
-export const getStoryById = async (code: string): Promise<IStory | null> => {
+export const getStoryById = async (_id: string): Promise<IStory | null> => {
   if (!isValidObjectId) return null;
 
   await db.connect();
-  const story = await Story.findOne({ code }).lean();
+  const story = await Story.findOne({ _id }).lean();
   await db.disconnect();
 
   if (!story) {
