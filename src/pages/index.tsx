@@ -25,7 +25,11 @@ const groupsData = [
 ];
 
 const HomePage: NextPage = () => {
-  const { stories, isLoading } = useStories('/stories');
+  const { stories, isLoading } = useStories('/stories', {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    refreshInterval: 0,
+  });
 
   return (
     <LandingLayout title="Infelcom" pageDescription="Semillero de investigación">
