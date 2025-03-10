@@ -11,7 +11,7 @@ export const getResearcherById = async (_id: string): Promise<IResearcher | null
   if (!isValidObjectId(_id)) return null;
   try {
     await db.connect();
-    const researcher = await Researcher.findById(_id).lean();
+    const researcher = await Researcher.findById(_id).select('-imageUrl').lean();
     return researcher ? JSON.parse(JSON.stringify(researcher)) : null;
   } catch (error) {
     console.error('No fue posible obtener el investigador ', error);
