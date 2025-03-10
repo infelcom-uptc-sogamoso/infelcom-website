@@ -9,16 +9,14 @@ interface ResearcherCode {
 
 export const getResearcherById = async (_id: string): Promise<IResearcher | null> => {
   if (!isValidObjectId(_id)) return null;
-
-  await db.connect();
-  const researcher = await Researcher.findOne({ _id }).lean();
-  await db.disconnect();
-
-  if (!researcher) {
+  try {
+    await db.connect();
+    const researcher = await Researcher.findById(_id).select('-imageUrl').lean();
+    return researcher ? JSON.parse(JSON.stringify(researcher)) : null;
+  } catch (error) {
+    console.error('No fue posible obtener el investigador ', error);
     return null;
   }
-
-  return JSON.parse(JSON.stringify(researcher));
 };
 
 export const getAllResearchersIds = async (): Promise<ResearcherCode[]> => {

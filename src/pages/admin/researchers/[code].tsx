@@ -235,24 +235,26 @@ const ResearcherAdminPage: FC<Props> = ({ researcher }) => {
                 </RadioGroup>
               </FormControl>
             </FormGroup>
-            <Box display="flex" flexDirection="column" sx={{ mt: 1, mb: 1 }}>
-              <Button
-                color="secondary"
-                fullWidth
-                startIcon={<UploadOutlined />}
-                sx={{ mb: 3 }}
-                onClick={() => fileInputRef.current?.click()}>
-                Cargar imagen
-              </Button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                multiple
-                accept="image/png, image/gif, image/jpeg"
-                style={{ display: 'none' }}
-                onChange={onFilesSelected}
-              />
-            </Box>
+            {!researcher?.code && (
+              <Box display="flex" flexDirection="column" sx={{ mt: 1, mb: 1 }}>
+                <Button
+                  color="secondary"
+                  fullWidth
+                  startIcon={<UploadOutlined />}
+                  sx={{ mb: 3 }}
+                  onClick={() => fileInputRef.current?.click()}>
+                  Cargar imagen
+                </Button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  accept="image/png, image/gif, image/jpeg"
+                  style={{ display: 'none' }}
+                  onChange={onFilesSelected}
+                />
+              </Box>
+            )}
           </Grid>
           <Grid item xs={12} sm={6} display={'flex'} flexDirection={'column'}>
             <Box display={'flex'} justifyContent={'flex-end'}>
