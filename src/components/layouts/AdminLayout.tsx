@@ -42,7 +42,7 @@ export const AdminLayout: FC<Props> = ({ children, title, subTitle, icon }) => {
         <Box className="fadeIn">{children}</Box>
         <Snackbar
           open={isOpenSnackbar}
-          autoHideDuration={5000}
+          autoHideDuration={3000}
           onClose={handleClose}
           message={message}
         />

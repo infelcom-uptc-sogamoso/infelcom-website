@@ -1,6 +1,6 @@
 import { useContext } from 'react';
 import NextLink from 'next/link';
-import { UiContext } from '@/contexts';
+import { UiContext, ResearcherContext } from '@/contexts';
 import useSWR, { mutate } from 'swr';
 import { Box, Button, Divider, Grid, IconButton, Link, Tooltip, Typography } from '@mui/material';
 import { AddOutlined, CategoryOutlined } from '@mui/icons-material';
@@ -14,12 +14,15 @@ import { formatDate } from '@/utils';
 
 const ResearchersPage = () => {
   const { toogleSnackbar } = useContext(UiContext);
-  const { data: researchersData, error: researchersError } =
-    useSWR<IResearcher[]>('/api/admin/researchers', {
+  const { sendData } = useContext(ResearcherContext);
+  const { data: researchersData, error: researchersError } = useSWR<IResearcher[]>(
+    '/api/admin/researchers',
+    {
       revalidateOnFocus: false,
       revalidateOnReconnect: false,
       refreshInterval: 0,
-    });
+    },
+  );
   const { data: storiesData, error: storiesError } = useSWR<IStory[]>('/api/admin/stories', {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
@@ -86,7 +89,7 @@ const ResearchersPage = () => {
             <Tooltip title="Editar">
               <NextLink href={`/admin/researchers/${row?._id}`} passHref>
                 <Link underline="always">
-                  <IconButton aria-label="edit" color="warning">
+                  <IconButton aria-label="edit" color="warning" onClick={() => sendData(row)}>
                     <EditIcon />
                   </IconButton>
                 </Link>
