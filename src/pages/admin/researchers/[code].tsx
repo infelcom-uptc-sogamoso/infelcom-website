@@ -21,10 +21,9 @@ import {
   capitalize,
   Switch,
 } from '@mui/material';
-import { dbResearchers } from '@/database';
 import { Researcher } from '@/models';
 import { ResearcherCard } from '@/components/researches/ResearcherCard';
-import { UiContext } from '@/contexts';
+import { UiContext, ResearcherContext } from '@/contexts';
 import { sleep } from '@/utils/sleep';
 
 interface Props {
@@ -47,10 +46,20 @@ interface FormData {
 
 const ResearcherAdminPage: FC<Props> = ({ researcher }) => {
   const { toogleSnackbar } = useContext(UiContext);
+  const { researcher: researcherById, clearData } = useContext(ResearcherContext);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [checked, setChecked] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    if (!researcher && researcherById) {
+      Object.keys(researcherById).forEach((key) => {
+        setValue(key as keyof FormData, researcherById[key as keyof FormData]);
+      });
+    }
+    // eslint-disable-next-line
+  }, [researcher, researcherById]);
 
   const {
     register,
@@ -114,13 +123,13 @@ const ResearcherAdminPage: FC<Props> = ({ researcher }) => {
         url: '/admin/researchers',
         method: form.code ? 'PUT' : 'POST',
         data: form,
-      }).then((res) => toogleSnackbar(res.data.message));
-      sleep(5000);
-      if (!form.code) {
-        router.replace(`/admin/researchers/${form.code}`);
-      } else {
+      }).then((res) => {
+        toogleSnackbar(res.data.message);
+        clearData();
+        sleep(5000);
         setIsSaving(false);
-      }
+        router.push('/admin');
+      });
     } catch (error) {
       console.error(error);
       setIsSaving(false);
@@ -307,17 +316,16 @@ export const getServerSideProps: GetServerSideProps = async ({ query }) => {
     tempProduct.imageUrl = '';
     researcher = tempProduct;
   } else {
-    researcher = await dbResearchers.getResearcherById(code.toString());
+    researcher = null;
   }
-
-  if (!researcher) {
+  /* if (!researcher) {
     return {
       redirect: {
         destination: '/admin',
         permanent: false,
       },
     };
-  }
+  } */
   return {
     props: {
       researcher,
