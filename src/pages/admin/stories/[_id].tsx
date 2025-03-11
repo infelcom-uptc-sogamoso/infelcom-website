@@ -91,7 +91,7 @@ const StoryAdminPage: FC<Props> = ({ story }) => {
     <AdminLayout
       title={'Noticias'}
       icon={<Newspaper />}
-      subTitle={story?.title ? `Editando a ${story?.title}` : ''}>
+      subTitle={story?.title ? `Editando prueba ${story?.title}` : ''}>
       <form onSubmit={handleSubmit(onSubmit)}>
         <Grid container spacing={2} mt={1}>
           <Grid item xs={12} sm={6}>
@@ -123,22 +123,26 @@ const StoryAdminPage: FC<Props> = ({ story }) => {
               error={!!errors.resume}
               helperText={errors.resume?.message}
             />
-            <Button
-              color="secondary"
-              fullWidth
-              startIcon={<UploadOutlined />}
-              sx={{ position: 'relative', bottom: 0 }}
-              onClick={() => fileInputRef.current?.click()}>
-              Cargar imagen
-            </Button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              multiple
-              accept="image/png, image/gif, image/jpeg"
-              style={{ display: 'none' }}
-              onChange={onFilesSelected}
-            />
+            {!story?.code && (
+              <>
+                <Button
+                  color="secondary"
+                  fullWidth
+                  startIcon={<UploadOutlined />}
+                  sx={{ position: 'relative', bottom: 0 }}
+                  onClick={() => fileInputRef.current?.click()}>
+                  Cargar imagen
+                </Button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  accept="image/png, image/gif, image/jpeg"
+                  style={{ display: 'none' }}
+                  onChange={onFilesSelected}
+                />
+              </>
+            )}
           </Grid>
           <Grid item xs={12} sm={6} display={'flex'} flexDirection={'column'} alignItems={'center'}>
             <Box>
@@ -184,17 +188,17 @@ const StoryAdminPage: FC<Props> = ({ story }) => {
 };
 
 export const getServerSideProps: GetServerSideProps = async ({ query }) => {
-  const { code = '' } = query;
+  const { _id = '' } = query;
 
   let story: IStory | null;
 
-  if (code === 'new') {
-    const tempProduct = JSON.parse(JSON.stringify(new Story()));
-    delete tempProduct.code;
-    tempProduct.imageUrl = '';
-    story = tempProduct;
+  if (_id === 'new') {
+    const tempStory = JSON.parse(JSON.stringify(new Story()));
+    delete tempStory.code;
+    tempStory.imageUrl = '';
+    story = tempStory;
   } else {
-    story = await dbStories.getStoryById(code.toString());
+    story = await dbStories.getStoryById(_id.toString());
   }
 
   if (!story) {
