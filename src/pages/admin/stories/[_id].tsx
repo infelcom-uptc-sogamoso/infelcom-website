@@ -91,7 +91,7 @@ const StoryAdminPage: FC<Props> = ({ story }) => {
     <AdminLayout
       title={'Noticias'}
       icon={<Newspaper />}
-      subTitle={story?.title ? `Editando prueba ${story?.title}` : ''}>
+      subTitle={story?.title ? `Editando a ${story?.title}` : ''}>
       <form onSubmit={handleSubmit(onSubmit)}>
         <Grid container spacing={2} mt={1}>
           <Grid item xs={12} sm={6}>

@@ -11,7 +11,7 @@ export const getStoryById = async (_id: string): Promise<IStory | null> => {
   if (!isValidObjectId(_id)) return null;
   try {
     await db.connect();
-    const story = await Story.findById(_id).select('-imageUrl').lean();
+    const story = await Story.findById(_id).select('title').lean();
     await db.disconnect();
     if (!story) {
       return null;
