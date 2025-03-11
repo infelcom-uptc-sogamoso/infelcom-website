@@ -1,4 +1,3 @@
-import { isValidObjectId } from 'mongoose';
 import { IResearcher } from '@/interfaces';
 import { Researcher } from '@/models';
 import { db } from '.';
@@ -8,11 +7,14 @@ interface ResearcherCode {
 }
 
 export const getResearcherById = async (_id: string): Promise<IResearcher | null> => {
-  if (!isValidObjectId(_id)) return null;
   try {
     await db.connect();
     const researcher = await Researcher.findById(_id).select('-imageUrl').lean();
-    return researcher ? JSON.parse(JSON.stringify(researcher)) : null;
+    await db.disconnect();
+    if (!researcher) {
+      return null;
+    }
+    return JSON.parse(JSON.stringify(researcher));
   } catch (error) {
     console.error('No fue posible obtener el investigador ', error);
     return null;
