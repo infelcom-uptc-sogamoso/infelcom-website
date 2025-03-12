@@ -306,15 +306,15 @@ const ResearcherAdminPage: FC<Props> = ({ researcher }) => {
 };
 
 export const getServerSideProps: GetServerSideProps = async ({ query }) => {
-  const { code = '' } = query;
+  const { _id = '' } = query;
 
   let researcher: IResearcher | null;
 
-  if (code === 'new') {
-    const tempProduct = JSON.parse(JSON.stringify(new Researcher()));
-    delete tempProduct.code;
-    tempProduct.imageUrl = '';
-    researcher = tempProduct;
+  if (_id === 'new') {
+    const tempResearcher = JSON.parse(JSON.stringify(new Researcher()));
+    delete tempResearcher.code;
+    tempResearcher.imageUrl = '';
+    researcher = tempResearcher;
   } else {
     researcher = null;
   }

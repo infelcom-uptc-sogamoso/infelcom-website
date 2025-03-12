@@ -19,8 +19,8 @@ const getProjects = async (req: NextApiRequest, res: NextApiResponse<Data>) => {
   const projects = await Project.find().lean();
   await db.disconnect();
 
-  const updatedProjects = projects.map((product) => {
-    return product;
+  const updatedProjects = projects.map((project) => {
+    return project;
   });
 
   return res.status(200).json(updatedProjects);
