@@ -1,6 +1,6 @@
 import { useContext } from 'react';
 import NextLink from 'next/link';
-import { UiContext, ResearcherContext } from '@/contexts';
+import { UiContext, ResearcherContext, ProjectContext, StoryContext } from '@/contexts';
 import useSWR, { mutate } from 'swr';
 import { Box, Button, Divider, Grid, IconButton, Link, Tooltip, Typography } from '@mui/material';
 import { AddOutlined, CategoryOutlined } from '@mui/icons-material';
@@ -14,7 +14,9 @@ import { formatDate } from '@/utils';
 
 const ResearchersPage = () => {
   const { toogleSnackbar } = useContext(UiContext);
-  const { sendData } = useContext(ResearcherContext);
+  const { sendData: sendDataResearcher } = useContext(ResearcherContext);
+  const { sendData: sendDataProject } = useContext(ProjectContext);
+  const { sendData: sendDataStory } = useContext(StoryContext);
   const { data: researchersData, error: researchersError } = useSWR<IResearcher[]>(
     '/api/admin/researchers',
     {
@@ -89,7 +91,7 @@ const ResearchersPage = () => {
             <Tooltip title="Editar">
               <NextLink href={`/admin/researchers/${row?._id}`} passHref>
                 <Link underline="always">
-                  <IconButton aria-label="edit" color="warning" onClick={() => sendData(row)}>
+                  <IconButton aria-label="edit" color="warning" onClick={() => sendDataResearcher(row)}>
                     <EditIcon />
                   </IconButton>
                 </Link>
@@ -124,7 +126,7 @@ const ResearchersPage = () => {
             <Tooltip title="Editar">
               <NextLink href={`/admin/projects/${row?._id}`} passHref>
                 <Link underline="always">
-                  <IconButton aria-label="edit" color="warning">
+                  <IconButton aria-label="edit" color="warning" onClick={() => sendDataProject(row)}>
                     <EditIcon />
                   </IconButton>
                 </Link>
@@ -170,7 +172,7 @@ const ResearchersPage = () => {
             <Tooltip title="Editar">
               <NextLink href={`/admin/stories/${row?._id}`} passHref>
                 <Link underline="always">
-                  <IconButton aria-label="edit" color="warning">
+                  <IconButton aria-label="edit" color="warning" onClick={() => sendDataStory(row)}>
                     <EditIcon />
                   </IconButton>
                 </Link>
@@ -187,11 +189,7 @@ const ResearchersPage = () => {
     },
   ];
 
-  if (!researchersData && !researchersError) return <></>;
-  if (!storiesData && !storiesError) return <></>;
-  if (!projectsData && !projectsError) return <></>;
-
-  const researchersRows = researchersData!.map((researcher: IResearcher) => ({
+  const researchersRows = (researchersData || []).map((researcher: IResearcher) => ({
     _id: researcher._id,
     code: researcher.code,
     imageUrl: researcher.imageUrl,
@@ -205,7 +203,7 @@ const ResearchersPage = () => {
     role: researcher.role,
   }));
 
-  const projectsRows = projectsData!.map((project: IProject) => ({
+  const projectsRows = (projectsData || []).map((project: IProject) => ({
     _id: project._id,
     code: project.code,
     title: project.title,
@@ -216,7 +214,7 @@ const ResearchersPage = () => {
     group: project.group,
   }));
 
-  const storiesRows = storiesData!.map((story: IStory) => ({
+  const storiesRows = (storiesData || []).map((story: IStory) => ({
     _id: story._id,
     code: story.code,
     imageUrl: story.imageUrl,
@@ -233,7 +231,7 @@ const ResearchersPage = () => {
       subTitle={'Mantenimiento de contenido'}
       icon={<CategoryOutlined />}>
       <Box display="flex" justifyContent="space-between" sx={{ mb: 2, mt: 2 }}>
-        <Typography variant="subtitle2">{`Investigadores (${researchersData?.length})`}</Typography>
+        <Typography variant="subtitle2">{researchersData && `Investigadores (${researchersData?.length})`}</Typography>
         <Button startIcon={<AddOutlined />} color="primary" href="/admin/researchers/new">
           Nuevo investigador
         </Button>
