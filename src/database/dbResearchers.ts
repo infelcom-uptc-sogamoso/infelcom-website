@@ -10,7 +10,7 @@ export const getResearcherById = async (_id: string): Promise<IResearcher | null
   try {
     await db.connect();
     const researcher = await Researcher.findById(_id).lean();
-    await db.disconnect();
+    // await db.disconnect();
     if (!researcher) {
       return null;
     }

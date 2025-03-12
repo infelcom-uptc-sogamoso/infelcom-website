@@ -295,20 +295,46 @@ const ResearcherAdminPage: FC<Props> = ({ researcher }) => {
   );
 };
 
+const fetchWithTimeout = (ms: number, promise: Promise<any>) => {
+  const timeout = new Promise((_, reject) =>
+    setTimeout(() => reject(new Error('Request timed out')), ms)
+  );
+  return Promise.race([promise, timeout]);
+};
+
 export const getServerSideProps: GetServerSideProps = async ({ query }) => {
   const { _id = '' } = query;
+  let researcher: IResearcher | null = null;
 
-  let researcher: IResearcher | null;
+  try {
+    if (_id === 'new') {
+      const tempResearcher = JSON.parse(JSON.stringify(new Researcher()));
+      delete tempResearcher.code;
+      tempResearcher.imageUrl = '';
+      researcher = tempResearcher;
+    } else {
+      researcher = await fetchWithTimeout(
+        5000,
+        dbResearchers.getResearcherById(_id.toString())
+      );
+    }
 
-  if (_id === 'new') {
-    const tempResearcher = JSON.parse(JSON.stringify(new Researcher()));
-    delete tempResearcher.code;
-    tempResearcher.imageUrl = '';
-    researcher = tempResearcher;
-  } else {
-    researcher = await dbResearchers.getResearcherById(_id.toString());
-  }
-  if (!researcher) {
+    if (!researcher) {
+      return {
+        redirect: {
+          destination: '/admin',
+          permanent: false,
+        },
+      };
+    }
+
+    return {
+      props: {
+        researcher,
+      },
+    };
+  } catch (error) {
+    console.error('Error fetching researcher:', error);
     return {
       redirect: {
         destination: '/admin',
@@ -316,11 +342,7 @@ export const getServerSideProps: GetServerSideProps = async ({ query }) => {
       },
     };
   }
-  return {
-    props: {
-      researcher,
-    },
-  };
 };
+
 
 export default ResearcherAdminPage;

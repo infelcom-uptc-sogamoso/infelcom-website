@@ -230,7 +230,7 @@ const ResearchersPage = () => {
 
   return (
     <AdminLayout
-      title={'Módulo de Pruebas'}
+      title={'Módulo de Pruebas 2'}
       subTitle={'Mantenimiento de contenido'}
       icon={<CategoryOutlined />}>
       <Box display="flex" justifyContent="space-between" sx={{ mb: 2, mt: 2 }}>
