@@ -11,6 +11,7 @@ import { infelcomApi } from '@/infelcomApis';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import { formatDate } from '@/utils';
+import { sleep } from '@/utils/sleep';
 
 const ResearchersPage = () => {
   const { toogleSnackbar } = useContext(UiContext);
@@ -72,6 +73,12 @@ const ResearchersPage = () => {
     }
   };
 
+  const editResearcher = (row: any) => {
+    sendDataResearcher(row);
+    sleep(5000)
+    window.location.href = `/admin/researchers/${row?._id}`
+  }
+
   const researchersColumns: GridColDef[] = [
     { field: 'name', minWidth: 250, headerName: 'Nombre(s)', resizable: false },
     { field: 'lastName', minWidth: 250, headerName: 'Apellido(s)', resizable: false },
@@ -89,13 +96,9 @@ const ResearchersPage = () => {
         return (
           <div className="actions-container">
             <Tooltip title="Editar">
-              <NextLink href={`/admin/researchers/${row?._id}`} passHref>
-                <Link underline="always">
-                  <IconButton aria-label="edit" color="warning" onClick={() => sendDataResearcher(row)}>
-                    <EditIcon />
-                  </IconButton>
-                </Link>
-              </NextLink>
+              <IconButton aria-label="edit" color="warning" onClick={() => editResearcher(row)}>
+                <EditIcon />
+              </IconButton>
             </Tooltip>
             <Tooltip title="Eliminar">
               <IconButton
@@ -227,7 +230,7 @@ const ResearchersPage = () => {
 
   return (
     <AdminLayout
-      title={'Módulo de Administracion'}
+      title={'Módulo de Pruebas'}
       subTitle={'Mantenimiento de contenido'}
       icon={<CategoryOutlined />}>
       <Box display="flex" justifyContent="space-between" sx={{ mb: 2, mt: 2 }}>

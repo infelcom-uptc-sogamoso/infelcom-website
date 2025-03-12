@@ -25,6 +25,7 @@ import { Researcher } from '@/models';
 import { ResearcherCard } from '@/components/researches/ResearcherCard';
 import { UiContext, ResearcherContext } from '@/contexts';
 import { sleep } from '@/utils/sleep';
+import { dbResearchers } from '@/database';
 
 interface Props {
   researcher: IResearcher;
@@ -46,20 +47,10 @@ interface FormData {
 
 const ResearcherAdminPage: FC<Props> = ({ researcher }) => {
   const { toogleSnackbar } = useContext(UiContext);
-  const { researcher: researcherById, clearData } = useContext(ResearcherContext);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [checked, setChecked] = useState(false);
   const router = useRouter();
-
-  useEffect(() => {
-    if (!researcher && researcherById) {
-      Object.keys(researcherById).forEach((key) => {
-        setValue(key as keyof FormData, researcherById[key as keyof FormData]);
-      });
-    }
-    // eslint-disable-next-line
-  }, [researcher, researcherById]);
 
   const {
     register,
@@ -125,7 +116,6 @@ const ResearcherAdminPage: FC<Props> = ({ researcher }) => {
         data: form,
       }).then((res) => {
         toogleSnackbar(res.data.message);
-        clearData();
         sleep(5000);
         setIsSaving(false);
         router.push('/admin');
@@ -316,16 +306,16 @@ export const getServerSideProps: GetServerSideProps = async ({ query }) => {
     tempResearcher.imageUrl = '';
     researcher = tempResearcher;
   } else {
-    researcher = null;
+    researcher = await dbResearchers.getResearcherById(_id.toString());
   }
-  /* if (!researcher) {
+  if (!researcher) {
     return {
       redirect: {
         destination: '/admin',
         permanent: false,
       },
     };
-  } */
+  }
   return {
     props: {
       researcher,
