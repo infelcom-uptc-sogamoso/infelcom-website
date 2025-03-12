@@ -1,6 +1,12 @@
 import type { AppProps } from 'next/app';
 import { SessionProvider } from 'next-auth/react';
-import { AuthProvider, UiProvider, ResearcherProvider } from '@/contexts';
+import {
+  AuthProvider,
+  UiProvider,
+  ResearcherProvider,
+  ProjectProvider,
+  StoryProvider,
+} from '@/contexts';
 import { lightTheme } from '@/themes';
 import { CssBaseline, ThemeProvider } from '@mui/material';
 import { SWRConfig } from 'swr';
@@ -17,9 +23,13 @@ export default function App({ Component, pageProps }: AppProps) {
           <UiProvider>
             <ThemeProvider theme={lightTheme}>
               <ResearcherProvider>
-                <CssBaseline>
-                  <Component {...pageProps} />
-                </CssBaseline>
+                <ProjectProvider>
+                  <StoryProvider>
+                    <CssBaseline>
+                      <Component {...pageProps} />
+                    </CssBaseline>
+                  </StoryProvider>
+                </ProjectProvider>
               </ResearcherProvider>
             </ThemeProvider>
           </UiProvider>

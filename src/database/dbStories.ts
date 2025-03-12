@@ -7,18 +7,23 @@ interface StoryCode {
   code: string;
 }
 
-export const getStoryById = async (_id: string): Promise<IStory | null> => {
-  if (!isValidObjectId) return null;
-
-  await db.connect();
-  const story = await Story.findOne({ _id }).lean();
-  await db.disconnect();
-
-  if (!story) {
+export const getStoryById = async (id: string): Promise<IStory | null> => {
+  if (!isValidObjectId(id)) return null;
+  try {
+    await db.connect();
+    const story = await Story.findOne({ _id: id })
+      .select('-__v -createdAt -updatedAt -imageUrl')
+      .lean();
+    await db.disconnect();
+    if (!story) {
+      return null;
+    }
+    return JSON.parse(JSON.stringify(story));
+  } catch (error) {
+    console.error(error);
+    await db.disconnect();
     return null;
   }
-
-  return JSON.parse(JSON.stringify(story));
 };
 
 export const getAllStoriesIds = async (): Promise<StoryCode[]> => {

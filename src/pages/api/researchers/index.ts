@@ -28,11 +28,11 @@ const getResearchers = async (req: NextApiRequest, res: NextApiResponse<Data>) =
   }
 
   await db.connect();
-  const products = await Researcher.find(condition).lean();
+  const researchers = await Researcher.find(condition).lean();
   await db.disconnect();
 
-  const updatedResearchers = products.map((product) => {
-    return product;
+  const updatedResearchers = researchers.map((researcher) => {
+    return researcher;
   });
 
   return res.status(200).json(updatedResearchers);
