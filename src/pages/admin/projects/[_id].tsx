@@ -1,4 +1,4 @@
-import { FC, ChangeEvent, useRef, useState, useContext } from 'react';
+import { FC, ChangeEvent, useRef, useState, useContext, useEffect } from 'react';
 import { GetServerSideProps } from 'next';
 import { useRouter } from 'next/router';
 import { AdminLayout } from '@/components/layouts';
@@ -23,7 +23,7 @@ import { infelcomApi } from '@/infelcomApis';
 import { useForm, useWatch } from 'react-hook-form';
 import { IProject } from '@/interfaces';
 import { ProjectCard } from '@/components/projects/ProjectCard';
-import { UiContext } from '@/contexts';
+import { ProjectContext, UiContext } from '@/contexts';
 import { sleep } from '@/utils/sleep';
 
 interface Props {
@@ -43,9 +43,19 @@ interface FormData {
 
 const ProjectAdminPage: FC<Props> = ({ project }) => {
   const { toogleSnackbar } = useContext(UiContext);
+  const { project: projectById, clearData } = useContext(ProjectContext);
   const [isSaving, setIsSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+
+  useEffect(() => {
+    if (!project && projectById) {
+      Object.keys(projectById).forEach((key) => {
+        setValue(key as keyof FormData, projectById[key as keyof FormData]);
+      });
+    }
+    // eslint-disable-next-line
+  }, [project, projectById]);
 
   const {
     register,
@@ -93,13 +103,13 @@ const ProjectAdminPage: FC<Props> = ({ project }) => {
         url: '/admin/projects',
         method: form.code ? 'PUT' : 'POST',
         data: form,
-      }).then((res) => toogleSnackbar(res.data.message));
-      sleep(5000);
-      if (!form.code) {
-        router.replace(`/admin/projects/${form.code}`);
-      } else {
+      }).then((res) => {
+        toogleSnackbar(res.data.message);
+        clearData();
+        sleep(5000);
         setIsSaving(false);
-      }
+        router.push('/admin');
+      });
     } catch (error) {
       console.error(error);
       setIsSaving(false);
@@ -251,22 +261,22 @@ export const getServerSideProps: GetServerSideProps = async ({ query }) => {
   let project: IProject | null;
 
   if (code === 'new') {
-    const tempProduct = JSON.parse(JSON.stringify(new Project()));
-    delete tempProduct.code;
-    tempProduct.image = '';
-    project = tempProduct;
+    const tempProject = JSON.parse(JSON.stringify(new Project()));
+    delete tempProject.code;
+    tempProject.image = '';
+    project = tempProject;
   } else {
-    project = await dbProjects.getProjectById(code.toString());
+    project = null;
   }
 
-  if (!project) {
+  /* if (!project) {
     return {
       redirect: {
         destination: '/admin',
         permanent: false,
       },
     };
-  }
+  } */
   return {
     props: {
       project,

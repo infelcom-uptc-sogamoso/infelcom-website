@@ -19,8 +19,8 @@ const getStories = async (req: NextApiRequest, res: NextApiResponse<Data>) => {
   const stories = await Story.find().lean();
   await db.disconnect();
 
-  const updatedStories = stories.map((product) => {
-    return product;
+  const updatedStories = stories.map((story) => {
+    return story;
   });
 
   return res.status(200).json(updatedStories);

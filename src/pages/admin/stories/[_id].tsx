@@ -1,4 +1,4 @@
-import { FC, ChangeEvent, useRef, useState, useContext } from 'react';
+import { FC, ChangeEvent, useRef, useState, useContext, useEffect } from 'react';
 
 import { GetServerSideProps } from 'next';
 import { useRouter } from 'next/router';
@@ -13,7 +13,7 @@ import { Newspaper, SaveOutlined, UploadOutlined } from '@mui/icons-material';
 import TextEditor from '@/components/ui/TextEditor';
 import { infelcomApi } from '@/infelcomApis';
 import { useForm, useWatch } from 'react-hook-form';
-import { UiContext } from '@/contexts';
+import { StoryContext, UiContext } from '@/contexts';
 import { sleep } from '@/utils/sleep';
 
 interface Props {
@@ -31,10 +31,20 @@ interface FormData {
 
 const StoryAdminPage: FC<Props> = ({ story }) => {
   const { toogleSnackbar } = useContext(UiContext);
+  const { story: storyById, clearData } = useContext(StoryContext);
   const [charCount, setCharCount] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+
+  useEffect(() => {
+    if (!story && storyById) {
+      Object.keys(storyById).forEach((key) => {
+        setValue(key as keyof FormData, storyById[key as keyof FormData]);
+      });
+    }
+    // eslint-disable-next-line
+  }, [story, storyById]);
 
   const {
     register,
@@ -74,13 +84,13 @@ const StoryAdminPage: FC<Props> = ({ story }) => {
         url: '/admin/stories',
         method: form.code ? 'PUT' : 'POST',
         data: form,
-      }).then((res) => toogleSnackbar(res.data.message));
-      sleep(5000);
-      if (!form.code) {
-        router.replace(`/admin/stories/${form.code}`);
-      } else {
+      }).then((res) => {
+        toogleSnackbar(res.data.message);
+        clearData();
+        sleep(5000);
         setIsSaving(false);
-      }
+        router.push('/admin');
+      });
     } catch (error) {
       console.error(error);
       setIsSaving(false);
@@ -123,22 +133,26 @@ const StoryAdminPage: FC<Props> = ({ story }) => {
               error={!!errors.resume}
               helperText={errors.resume?.message}
             />
-            <Button
-              color="secondary"
-              fullWidth
-              startIcon={<UploadOutlined />}
-              sx={{ position: 'relative', bottom: 0 }}
-              onClick={() => fileInputRef.current?.click()}>
-              Cargar imagen
-            </Button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              multiple
-              accept="image/png, image/gif, image/jpeg"
-              style={{ display: 'none' }}
-              onChange={onFilesSelected}
-            />
+            {!story?.code && (
+              <>
+                <Button
+                  color="secondary"
+                  fullWidth
+                  startIcon={<UploadOutlined />}
+                  sx={{ position: 'relative', bottom: 0 }}
+                  onClick={() => fileInputRef.current?.click()}>
+                  Cargar imagen
+                </Button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  accept="image/png, image/gif, image/jpeg"
+                  style={{ display: 'none' }}
+                  onChange={onFilesSelected}
+                />
+              </>
+            )}
           </Grid>
           <Grid item xs={12} sm={6} display={'flex'} flexDirection={'column'} alignItems={'center'}>
             <Box>
@@ -184,27 +198,27 @@ const StoryAdminPage: FC<Props> = ({ story }) => {
 };
 
 export const getServerSideProps: GetServerSideProps = async ({ query }) => {
-  const { code = '' } = query;
+  const { _id = '' } = query;
 
   let story: IStory | null;
 
-  if (code === 'new') {
-    const tempProduct = JSON.parse(JSON.stringify(new Story()));
-    delete tempProduct.code;
-    tempProduct.imageUrl = '';
-    story = tempProduct;
+  if (_id === 'new') {
+    const tempStory = JSON.parse(JSON.stringify(new Story()));
+    delete tempStory.code;
+    tempStory.imageUrl = '';
+    story = tempStory;
   } else {
-    story = await dbStories.getStoryById(code.toString());
+    story = null;
   }
 
-  if (!story) {
+  /* if (!story) {
     return {
       redirect: {
         destination: '/admin',
         permanent: false,
       },
     };
-  }
+  } */
   return {
     props: {
       story,
