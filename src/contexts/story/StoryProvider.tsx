@@ -14,7 +14,7 @@ const STORY_INITIAL_STATE: StoryState = {
     resume: '',
     content: '',
     createdAt: '',
-    updatedAt: ''
+    updatedAt: '',
   },
 };
 

@@ -1,6 +1,12 @@
 import type { AppProps } from 'next/app';
 import { SessionProvider } from 'next-auth/react';
-import { AuthProvider, UiProvider, ResearcherProvider, ProjectProvider, StoryProvider } from '@/contexts';
+import {
+  AuthProvider,
+  UiProvider,
+  ResearcherProvider,
+  ProjectProvider,
+  StoryProvider,
+} from '@/contexts';
 import { lightTheme } from '@/themes';
 import { CssBaseline, ThemeProvider } from '@mui/material';
 import { SWRConfig } from 'swr';

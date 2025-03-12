@@ -5,10 +5,7 @@ type UiActionType =
   | { type: '[Story] - getById'; payload: IStory }
   | { type: '[Story] - clearData' };
 
-export const storyReducer = (
-  state: StoryState,
-  action: UiActionType,
-): StoryState => {
+export const storyReducer = (state: StoryState, action: UiActionType): StoryState => {
   switch (action.type) {
     case '[Story] - getById':
       return {

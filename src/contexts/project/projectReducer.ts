@@ -5,10 +5,7 @@ type UiActionType =
   | { type: '[Project] - getById'; payload: IProject }
   | { type: '[Project] - clearData' };
 
-export const projectReducer = (
-  state: ProjectState,
-  action: UiActionType,
-): ProjectState => {
+export const projectReducer = (state: ProjectState, action: UiActionType): ProjectState => {
   switch (action.type) {
     case '[Project] - getById':
       return {

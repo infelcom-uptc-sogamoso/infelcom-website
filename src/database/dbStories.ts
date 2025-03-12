@@ -12,7 +12,8 @@ export const getStoryById = async (id: string): Promise<IStory | null> => {
   try {
     await db.connect();
     const story = await Story.findOne({ _id: id })
-      .select("-__v -createdAt -updatedAt -imageUrl").lean();
+      .select('-__v -createdAt -updatedAt -imageUrl')
+      .lean();
     await db.disconnect();
     if (!story) {
       return null;
