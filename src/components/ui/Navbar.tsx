@@ -21,7 +21,7 @@ export const Navbar = () => {
           </Link>
         </NextLink>
         <Box flex={1} />
-        {!pathname.includes('/admin') && (
+        {!pathname?.includes('/admin') && (
           <Box sx={{ display: { xs: 'none', sm: 'flex' } }}>
             <NextLink href={'/researchers'} passHref legacyBehavior>
               <Link>

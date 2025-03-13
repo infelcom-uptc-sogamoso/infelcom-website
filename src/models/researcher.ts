@@ -19,7 +19,7 @@ const researcherSchema = new Schema(
       type: String,
       enum: {
         values: ['undergraduate', 'master', 'doctoral'],
-        message: '{VALUE} no es una categoria valida',
+        message: '{VALUE} no es una Categoría valida',
         default: 'undergraduate',
         required: true,
       },

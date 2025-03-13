@@ -1,6 +1,5 @@
 import { useRouter } from 'next/router';
-import { GetServerSideProps } from 'next';
-import { ChangeEvent, FC, useContext, useEffect, useRef, useState } from 'react';
+import { ChangeEvent, useContext, useEffect, useRef, useState } from 'react';
 import { AdminLayout } from '@/components/layouts';
 import { Groups, SaveOutlined, UploadOutlined } from '@mui/icons-material';
 import { infelcomApi } from '@/infelcomApis';
@@ -21,14 +20,9 @@ import {
   capitalize,
   Switch,
 } from '@mui/material';
-import { Researcher } from '@/models';
 import { ResearcherCard } from '@/components/researches/ResearcherCard';
-import { UiContext, ResearcherContext } from '@/contexts';
+import { UiContext } from '@/contexts';
 import { sleep } from '@/utils/sleep';
-
-interface Props {
-  researcher: IResearcher;
-}
 
 interface FormData {
   _id?: string;
@@ -44,22 +38,41 @@ interface FormData {
   role: string;
 }
 
-const ResearcherAdminPage: FC<Props> = ({ researcher }) => {
+const ResearcherAdminPage = () => {
   const { toogleSnackbar } = useContext(UiContext);
-  const { researcher: researcherById, clearData } = useContext(ResearcherContext);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [researcher, setResearcher] = useState<IResearcher>();
   const [isSaving, setIsSaving] = useState(false);
   const [checked, setChecked] = useState(false);
   const router = useRouter();
+  const { _id } = router.query;
+
+  const validCategories = [
+    { label: 'Pregrado', value: 'undergraduate' },
+    { label: 'Master', value: 'master' },
+    { label: 'Doctorado', value: 'doctoral' },
+  ];
+  const validRoles = [
+    { label: 'Docente', value: 'professor' },
+    { label: 'Estudiante', value: 'student' },
+  ];
 
   useEffect(() => {
-    if (!researcher && researcherById) {
-      Object.keys(researcherById).forEach((key) => {
-        setValue(key as keyof FormData, researcherById[key as keyof FormData]);
-      });
+    if (_id && _id !== 'new') {
+      fetchResearcherById(_id)
     }
-    // eslint-disable-next-line
-  }, [researcher, researcherById]);
+  }, [_id])
+
+  const fetchResearcherById = async (_id: any) => {
+    try {
+      await infelcomApi({
+        url: `/researcher/?_id=${_id}`,
+        method: 'GET',
+      }).then((res) => setResearcher(res.data));
+    } catch (error) {
+      console.error(error);
+    }
+  }
 
   const {
     register,
@@ -76,15 +89,14 @@ const ResearcherAdminPage: FC<Props> = ({ researcher }) => {
     control,
   });
 
-  const validCategories = [
-    { label: 'Pregrado', value: 'undergraduate' },
-    { label: 'Master', value: 'master' },
-    { label: 'Doctorado', value: 'doctoral' },
-  ];
-  const validRoles = [
-    { label: 'Docente', value: 'professor' },
-    { label: 'Estudiante', value: 'student' },
-  ];
+  useEffect(() => {
+    if (researcher) {
+      Object.keys(researcher).forEach((key) => {
+        setValue(key as keyof FormData, researcher[key as keyof FormData]);
+      });
+    }
+    // eslint-disable-next-line
+  }, [researcher])
 
   useEffect(() => {
     setValue('isShowed', !checked, {
@@ -125,7 +137,6 @@ const ResearcherAdminPage: FC<Props> = ({ researcher }) => {
         data: form,
       }).then((res) => {
         toogleSnackbar(res.data.message);
-        clearData();
         sleep(5000);
         setIsSaving(false);
         router.push('/admin');
@@ -145,7 +156,7 @@ const ResearcherAdminPage: FC<Props> = ({ researcher }) => {
         <Grid container spacing={2} mt={1}>
           <Grid item xs={12} sm={6}>
             <TextField
-              label="Nombre(s)"
+              label={getValues('name')?.length > 0 ? '' : 'Nombre(s)'}
               variant="outlined"
               fullWidth
               sx={{ mb: 1 }}
@@ -157,7 +168,7 @@ const ResearcherAdminPage: FC<Props> = ({ researcher }) => {
               helperText={errors.name?.message}
             />
             <TextField
-              label="Apellidos(s)"
+              label={getValues('lastName')?.length > 0 ? '' : 'Apellido(s)'}
               variant="outlined"
               fullWidth
               multiline
@@ -168,8 +179,9 @@ const ResearcherAdminPage: FC<Props> = ({ researcher }) => {
               error={!!errors.lastName}
               helperText={errors.lastName?.message}
             />
+            <FormLabel></FormLabel>
             <TextField
-              label="Descripcion"
+              label={getValues('type')?.length > 0 ? '' : 'Descripción'}
               variant="outlined"
               fullWidth
               multiline
@@ -181,7 +193,7 @@ const ResearcherAdminPage: FC<Props> = ({ researcher }) => {
               helperText={errors.type?.message}
             />
             <TextField
-              label="Correo electronico"
+              label={getValues('email')?.length > 0 ? '' : 'Correo electrónico'}
               variant="outlined"
               fullWidth
               multiline
@@ -193,7 +205,7 @@ const ResearcherAdminPage: FC<Props> = ({ researcher }) => {
               helperText={errors.email?.message}
             />
             <TextField
-              label="CvLAC"
+              label={getValues('cvlacUrl')?.length > 0 ? '' : 'CvLAC'}
               variant="outlined"
               fullWidth
               multiline
@@ -226,7 +238,7 @@ const ResearcherAdminPage: FC<Props> = ({ researcher }) => {
             </FormGroup>
             <FormGroup>
               <FormControl sx={{ mt: 1, mb: 1 }}>
-                <FormLabel>Categoria</FormLabel>
+                <FormLabel>Categoría</FormLabel>
                 <RadioGroup
                   row
                   value={getValues('category')}
@@ -303,34 +315,6 @@ const ResearcherAdminPage: FC<Props> = ({ researcher }) => {
       </form>
     </AdminLayout>
   );
-};
-
-export const getServerSideProps: GetServerSideProps = async ({ query }) => {
-  const { _id = '' } = query;
-
-  let researcher: IResearcher | null;
-
-  if (_id === 'new') {
-    const tempResearcher = JSON.parse(JSON.stringify(new Researcher()));
-    delete tempResearcher.code;
-    tempResearcher.imageUrl = '';
-    researcher = tempResearcher;
-  } else {
-    researcher = null;
-  }
-  /* if (!researcher) {
-    return {
-      redirect: {
-        destination: '/admin',
-        permanent: false,
-      },
-    };
-  } */
-  return {
-    props: {
-      researcher,
-    },
-  };
 };
 
 export default ResearcherAdminPage;

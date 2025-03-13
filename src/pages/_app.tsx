@@ -3,9 +3,6 @@ import { SessionProvider } from 'next-auth/react';
 import {
   AuthProvider,
   UiProvider,
-  ResearcherProvider,
-  ProjectProvider,
-  StoryProvider,
 } from '@/contexts';
 import { lightTheme } from '@/themes';
 import { CssBaseline, ThemeProvider } from '@mui/material';
@@ -22,15 +19,9 @@ export default function App({ Component, pageProps }: AppProps) {
         <AuthProvider>
           <UiProvider>
             <ThemeProvider theme={lightTheme}>
-              <ResearcherProvider>
-                <ProjectProvider>
-                  <StoryProvider>
-                    <CssBaseline>
-                      <Component {...pageProps} />
-                    </CssBaseline>
-                  </StoryProvider>
-                </ProjectProvider>
-              </ResearcherProvider>
+              <CssBaseline>
+                <Component {...pageProps} />
+              </CssBaseline>
             </ThemeProvider>
           </UiProvider>
         </AuthProvider>
