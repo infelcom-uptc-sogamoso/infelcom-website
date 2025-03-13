@@ -1,24 +1,16 @@
-import { FC, ChangeEvent, useRef, useState, useContext, useEffect } from 'react';
-
-import { GetServerSideProps } from 'next';
+import { ChangeEvent, useRef, useState, useContext, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Image from 'next/image';
 import { AdminLayout } from '@/components/layouts';
-import { dbStories } from '@/database';
 import { IStory } from '@/interfaces';
-import Story from '@/models/story';
 import { Box, Button, Divider, Grid } from '@mui/material';
 import TextField from '@mui/material/TextField';
 import { Newspaper, SaveOutlined, UploadOutlined } from '@mui/icons-material';
 import TextEditor from '@/components/ui/TextEditor';
 import { infelcomApi } from '@/infelcomApis';
 import { useForm, useWatch } from 'react-hook-form';
-import { StoryContext, UiContext } from '@/contexts';
+import { UiContext } from '@/contexts';
 import { sleep } from '@/utils/sleep';
-
-interface Props {
-  story: IStory;
-}
 
 interface FormData {
   _id?: string;
@@ -29,28 +21,38 @@ interface FormData {
   imageUrl: string;
 }
 
-const StoryAdminPage: FC<Props> = ({ story }) => {
+const StoryAdminPage = () => {
   const { toogleSnackbar } = useContext(UiContext);
-  const { story: storyById, clearData } = useContext(StoryContext);
+  const [story, setStory] = useState<IStory>();
   const [charCount, setCharCount] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+  const { _id } = router.query;
 
   useEffect(() => {
-    if (!story && storyById) {
-      Object.keys(storyById).forEach((key) => {
-        setValue(key as keyof FormData, storyById[key as keyof FormData]);
-      });
+    if (_id && _id !== 'new') {
+      fetchStoryById(_id)
     }
-    // eslint-disable-next-line
-  }, [story, storyById]);
+  }, [_id])
+
+  const fetchStoryById = async (_id: any) => {
+    try {
+      await infelcomApi({
+        url: `/story/?_id=${_id}`,
+        method: 'GET',
+      }).then((res) => setStory(res.data));
+    } catch (error) {
+      console.error(error);
+    }
+  }
 
   const {
     register,
     handleSubmit,
     control,
     formState: { errors },
+    getValues,
     setValue,
     watch,
   } = useForm<FormData>({
@@ -86,7 +88,6 @@ const StoryAdminPage: FC<Props> = ({ story }) => {
         data: form,
       }).then((res) => {
         toogleSnackbar(res.data.message);
-        clearData();
         sleep(5000);
         setIsSaving(false);
         router.push('/admin');
@@ -106,7 +107,7 @@ const StoryAdminPage: FC<Props> = ({ story }) => {
         <Grid container spacing={2} mt={1}>
           <Grid item xs={12} sm={6}>
             <TextField
-              label="Titulo"
+              label={getValues('title')?.length > 0 ? '' : 'Título'}
               variant="outlined"
               fullWidth
               multiline
@@ -120,7 +121,7 @@ const StoryAdminPage: FC<Props> = ({ story }) => {
               helperText={errors.title?.message}
             />
             <TextField
-              label="Resumen"
+              label={getValues('title')?.length > 0 ? '' : 'resume'}
               variant="outlined"
               fullWidth
               multiline
@@ -195,35 +196,6 @@ const StoryAdminPage: FC<Props> = ({ story }) => {
       </form>
     </AdminLayout>
   );
-};
-
-export const getServerSideProps: GetServerSideProps = async ({ query }) => {
-  const { _id = '' } = query;
-
-  let story: IStory | null;
-
-  if (_id === 'new') {
-    const tempStory = JSON.parse(JSON.stringify(new Story()));
-    delete tempStory.code;
-    tempStory.imageUrl = '';
-    story = tempStory;
-  } else {
-    story = null;
-  }
-
-  /* if (!story) {
-    return {
-      redirect: {
-        destination: '/admin',
-        permanent: false,
-      },
-    };
-  } */
-  return {
-    props: {
-      story,
-    },
-  };
 };
 
 export default StoryAdminPage;

@@ -19,8 +19,8 @@ export const ResearcherCard: FC<Props> = ({ researcher }) => {
     imageUrl,
     name = 'Nombre(s)',
     lastName = 'Apellido(s)',
-    type = 'Descripcion',
-    email = 'Correo electronico',
+    type = 'Descripción',
+    email = 'Correo electrónico',
     cvlacUrl = '',
   } = researcher;
 
