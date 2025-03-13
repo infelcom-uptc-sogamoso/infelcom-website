@@ -1,9 +1,6 @@
-import { FC, ChangeEvent, useRef, useState, useContext, useEffect } from 'react';
-import { GetServerSideProps } from 'next';
+import { ChangeEvent, useRef, useState, useContext, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { AdminLayout } from '@/components/layouts';
-import { dbProjects } from '@/database';
-import Project from '@/models/project';
 import {
   Box,
   Button,
@@ -23,12 +20,8 @@ import { infelcomApi } from '@/infelcomApis';
 import { useForm, useWatch } from 'react-hook-form';
 import { IProject } from '@/interfaces';
 import { ProjectCard } from '@/components/projects/ProjectCard';
-import { ProjectContext, UiContext } from '@/contexts';
+import { UiContext } from '@/contexts';
 import { sleep } from '@/utils/sleep';
-
-interface Props {
-  project: IProject;
-}
 
 interface FormData {
   _id?: string;
@@ -41,21 +34,38 @@ interface FormData {
   group: string;
 }
 
-const ProjectAdminPage: FC<Props> = ({ project }) => {
+const ProjectAdminPage = () => {
   const { toogleSnackbar } = useContext(UiContext);
-  const { project: projectById, clearData } = useContext(ProjectContext);
+  const [project, setProject] = useState<IProject>();
   const [isSaving, setIsSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+  const { _id } = router.query;
+
+  const validCategories = [
+    { label: 'Pregrado', value: 'undergraduate' },
+    { label: 'Master', value: 'master' },
+    { label: 'Doctorado', value: 'doctoral' },
+  ];
+
+  const validGroups = ['SEMTEL', 'SCIECOM', 'SEMVR'];
 
   useEffect(() => {
-    if (!project && projectById) {
-      Object.keys(projectById).forEach((key) => {
-        setValue(key as keyof FormData, projectById[key as keyof FormData]);
-      });
+    if (_id && _id !== 'new') {
+      fetchProjectById(_id)
     }
-    // eslint-disable-next-line
-  }, [project, projectById]);
+  }, [_id])
+
+  const fetchProjectById = async (_id: any) => {
+    try {
+      await infelcomApi({
+        url: `/project/?_id=${_id}`,
+        method: 'GET',
+      }).then((res) => setProject(res.data));
+    } catch (error) {
+      console.error(error);
+    }
+  }
 
   const {
     register,
@@ -71,14 +81,6 @@ const ProjectAdminPage: FC<Props> = ({ project }) => {
   const results = useWatch({
     control,
   });
-
-  const validCategories = [
-    { label: 'Pregrado', value: 'undergraduate' },
-    { label: 'Master', value: 'master' },
-    { label: 'Doctorado', value: 'doctoral' },
-  ];
-
-  const validGroups = ['SEMTEL', 'SCIECOM', 'SEMVR'];
 
   const onFilesSelected = ({ target }: ChangeEvent<HTMLInputElement>) => {
     if (!target.files || target.files.length === 0) {
@@ -105,7 +107,6 @@ const ProjectAdminPage: FC<Props> = ({ project }) => {
         data: form,
       }).then((res) => {
         toogleSnackbar(res.data.message);
-        clearData();
         sleep(5000);
         setIsSaving(false);
         router.push('/admin');
@@ -125,7 +126,7 @@ const ProjectAdminPage: FC<Props> = ({ project }) => {
         <Grid container spacing={2} mt={1}>
           <Grid item xs={12} sm={6}>
             <TextField
-              label="Titulo"
+              label={getValues('title')?.length > 0 ? '' : 'Título'}
               variant="outlined"
               fullWidth
               sx={{ mb: 1 }}
@@ -137,7 +138,7 @@ const ProjectAdminPage: FC<Props> = ({ project }) => {
               helperText={errors.title?.message}
             />
             <TextField
-              label="Resumen"
+              label={getValues('description')?.length > 0 ? '' : 'Resumen'}
               variant="outlined"
               fullWidth
               multiline
@@ -151,7 +152,7 @@ const ProjectAdminPage: FC<Props> = ({ project }) => {
               helperText={errors.description?.message}
             />
             <TextField
-              label="URL Demo"
+              label={getValues('description')?.length > 0 ? '' : 'URL Demo'}
               variant="outlined"
               fullWidth
               sx={{ mb: 1 }}
@@ -163,7 +164,7 @@ const ProjectAdminPage: FC<Props> = ({ project }) => {
             />
             <FormGroup>
               <FormControl sx={{ mt: 1, mb: 1 }}>
-                <FormLabel>Grupo de investigacion</FormLabel>
+                <FormLabel>Grupo de investigación</FormLabel>
                 <RadioGroup
                   row
                   value={getValues('group')}
@@ -253,35 +254,6 @@ const ProjectAdminPage: FC<Props> = ({ project }) => {
       </form>
     </AdminLayout>
   );
-};
-
-export const getServerSideProps: GetServerSideProps = async ({ query }) => {
-  const { code = '' } = query;
-
-  let project: IProject | null;
-
-  if (code === 'new') {
-    const tempProject = JSON.parse(JSON.stringify(new Project()));
-    delete tempProject.code;
-    tempProject.image = '';
-    project = tempProject;
-  } else {
-    project = null;
-  }
-
-  /* if (!project) {
-    return {
-      redirect: {
-        destination: '/admin',
-        permanent: false,
-      },
-    };
-  } */
-  return {
-    props: {
-      project,
-    },
-  };
 };
 
 export default ProjectAdminPage;

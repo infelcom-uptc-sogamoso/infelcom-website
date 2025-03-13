@@ -106,9 +106,9 @@ const ResearchersPage = () => {
   ];
 
   const projectsColumns: GridColDef[] = [
-    { field: 'title', width: 550, headerName: 'Titulo' },
+    { field: 'title', width: 550, headerName: 'Título' },
     { field: 'description', width: 400, headerName: 'Descripción' },
-    { field: 'group', width: 250, headerName: 'Grupo de investigacion' },
+    { field: 'group', width: 250, headerName: 'Grupo de investigación' },
     {
       field: 'actions',
       headerName: 'Acciones',
@@ -138,7 +138,7 @@ const ResearchersPage = () => {
   ];
 
   const storiesColumns: GridColDef[] = [
-    { field: 'title', width: 700, headerName: 'Titulo' },
+    { field: 'title', width: 700, headerName: 'Título' },
     {
       field: 'createdAt',
       width: 250,
