@@ -21,7 +21,7 @@ interface Props {
 export const ProjectCard: FC<Props> = ({ project }) => {
   const {
     title = 'Titulo del proyecto',
-    description = 'Descripcion del proyecto',
+    description = 'Descripción del proyecto',
     image,
     url = '',
   } = project;

@@ -83,7 +83,7 @@ const ResearchersPage = () => {
     { field: 'name', minWidth: 250, headerName: 'Nombre(s)', resizable: false },
     { field: 'lastName', minWidth: 250, headerName: 'Apellido(s)', resizable: false },
     { field: 'email', minWidth: 350, headerName: 'Email', resizable: false },
-    { field: 'type', minWidth: 350, headerName: 'Descripcion', resizable: false },
+    { field: 'type', minWidth: 350, headerName: 'Descripción', resizable: false },
     {
       field: 'actions',
       headerName: 'Acciones',
@@ -96,9 +96,13 @@ const ResearchersPage = () => {
         return (
           <div className="actions-container">
             <Tooltip title="Editar">
-              <IconButton aria-label="edit" color="warning" onClick={() => editResearcher(row)}>
-                <EditIcon />
-              </IconButton>
+              <NextLink href={`/admin/researchers/${row?._id}`} passHref>
+                <Link underline="always">
+                  <IconButton aria-label="edit" color="warning">
+                    <EditIcon />
+                  </IconButton>
+                </Link>
+              </NextLink>
             </Tooltip>
             <Tooltip title="Eliminar">
               <IconButton
@@ -108,7 +112,7 @@ const ResearchersPage = () => {
                 <DeleteIcon />
               </IconButton>
             </Tooltip>
-          </div>
+          </div >
         );
       },
     },
@@ -116,7 +120,7 @@ const ResearchersPage = () => {
 
   const projectsColumns: GridColDef[] = [
     { field: 'title', width: 550, headerName: 'Titulo' },
-    { field: 'description', width: 400, headerName: 'Descripcion' },
+    { field: 'description', width: 400, headerName: 'Descripción' },
     { field: 'group', width: 250, headerName: 'Grupo de investigacion' },
     {
       field: 'actions',
@@ -230,7 +234,7 @@ const ResearchersPage = () => {
 
   return (
     <AdminLayout
-      title={'Módulo de Pruebas 2'}
+      title={'Módulo de Administración'}
       subTitle={'Mantenimiento de contenido'}
       icon={<CategoryOutlined />}>
       <Box display="flex" justifyContent="space-between" sx={{ mb: 2, mt: 2 }}>

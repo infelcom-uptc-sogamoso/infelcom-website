@@ -183,7 +183,7 @@ const ProjectAdminPage: FC<Props> = ({ project }) => {
             </FormGroup>
             <FormGroup>
               <FormControl sx={{ mt: 1, mb: 1 }}>
-                <FormLabel>Categoria</FormLabel>
+                <FormLabel>Categoría</FormLabel>
                 <RadioGroup
                   row
                   value={getValues('category')}
