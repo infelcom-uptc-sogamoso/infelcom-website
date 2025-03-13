@@ -9,8 +9,9 @@ interface Props {
 
 export const StoriesCard: FC<Props> = ({ story }) => {
   const { code, title, resume, imageUrl, createdAt } = story;
-  const route = useRouter();
   const [creationDate] = formatDate(createdAt).split(' ');
+  const route = useRouter();
+
   return (
     <Grid
       item

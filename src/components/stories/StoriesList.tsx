@@ -1,7 +1,8 @@
 import { FC } from 'react';
+import NextLink from 'next/link';
 import { IStory } from '@/interfaces';
 import { StoriesCard } from './StoriesCard';
-import { Box, Button } from '@mui/material';
+import { Box, Button, Link } from '@mui/material';
 import { AddOutlined } from '@mui/icons-material';
 import { useRouter } from 'next/router';
 import { CardSkeleton } from '../skeletons/CardSkeleton';
@@ -36,7 +37,11 @@ export const StoriesList: FC<Props> = ({ stories, isLoading }) => {
       )}
       {isLoading && <CardSkeleton quantity={3} width={300} height={415} />}
       {stories.map((story) => (
-        <StoriesCard key={story.code} story={story} />
+        <NextLink href={`/stories/${story?._id}`} passHref>
+          <Link underline="always">
+            <StoriesCard key={story.code} story={story} />
+          </Link>
+        </NextLink>
       ))}
     </Box>
   );
