@@ -1,6 +1,6 @@
 import { useContext } from 'react';
 import NextLink from 'next/link';
-import { UiContext, ResearcherContext, ProjectContext, StoryContext } from '@/contexts';
+import { UiContext } from '@/contexts';
 import useSWR, { mutate } from 'swr';
 import { Box, Button, Divider, Grid, IconButton, Link, Tooltip, Typography } from '@mui/material';
 import { AddOutlined, CategoryOutlined } from '@mui/icons-material';
@@ -11,14 +11,10 @@ import { infelcomApi } from '@/infelcomApis';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import { formatDate } from '@/utils';
-import { sleep } from '@/utils/sleep';
 
 const ResearchersPage = () => {
   const { toogleSnackbar } = useContext(UiContext);
-  const { sendData: sendDataResearcher } = useContext(ResearcherContext);
-  const { sendData: sendDataProject } = useContext(ProjectContext);
-  const { sendData: sendDataStory } = useContext(StoryContext);
-  const { data: researchersData, error: researchersError } = useSWR<IResearcher[]>(
+  const { data: researchersData } = useSWR<IResearcher[]>(
     '/api/admin/researchers',
     {
       revalidateOnFocus: false,
@@ -26,12 +22,12 @@ const ResearchersPage = () => {
       refreshInterval: 0,
     },
   );
-  const { data: storiesData, error: storiesError } = useSWR<IStory[]>('/api/admin/stories', {
+  const { data: storiesData } = useSWR<IStory[]>('/api/admin/stories', {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
     refreshInterval: 0,
   });
-  const { data: projectsData, error: projectsError } = useSWR<IProject[]>('/api/admin/projects', {
+  const { data: projectsData } = useSWR<IProject[]>('/api/admin/projects', {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
     refreshInterval: 0,
@@ -73,12 +69,6 @@ const ResearchersPage = () => {
     }
   };
 
-  const editResearcher = (row: any) => {
-    sendDataResearcher(row);
-    sleep(5000)
-    window.location.href = `/admin/researchers/${row?._id}`
-  }
-
   const researchersColumns: GridColDef[] = [
     { field: 'name', minWidth: 250, headerName: 'Nombre(s)', resizable: false },
     { field: 'lastName', minWidth: 250, headerName: 'Apellido(s)', resizable: false },
@@ -105,10 +95,7 @@ const ResearchersPage = () => {
               </NextLink>
             </Tooltip>
             <Tooltip title="Eliminar">
-              <IconButton
-                aria-label="delete"
-                color="error"
-                onClick={() => deleteResearcher(row?._id)}>
+              <IconButton aria-label="delete" color="error" onClick={() => deleteResearcher(row?._id)}>
                 <DeleteIcon />
               </IconButton>
             </Tooltip>
@@ -133,7 +120,7 @@ const ResearchersPage = () => {
             <Tooltip title="Editar">
               <NextLink href={`/admin/projects/${row?._id}`} passHref>
                 <Link underline="always">
-                  <IconButton aria-label="edit" color="warning" onClick={() => sendDataProject(row)}>
+                  <IconButton aria-label="edit" color="warning">
                     <EditIcon />
                   </IconButton>
                 </Link>
@@ -179,7 +166,7 @@ const ResearchersPage = () => {
             <Tooltip title="Editar">
               <NextLink href={`/admin/stories/${row?._id}`} passHref>
                 <Link underline="always">
-                  <IconButton aria-label="edit" color="warning" onClick={() => sendDataStory(row)}>
+                  <IconButton aria-label="edit" color="warning">
                     <EditIcon />
                   </IconButton>
                 </Link>

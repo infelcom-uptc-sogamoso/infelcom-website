@@ -58,7 +58,6 @@ const ResearcherAdminPage = () => {
   ];
 
   useEffect(() => {
-    console.log({ _id });
     if (_id && _id !== 'new') {
       fetchResearcherById(_id)
     }
@@ -96,6 +95,7 @@ const ResearcherAdminPage = () => {
         setValue(key as keyof FormData, researcher[key as keyof FormData]);
       });
     }
+    // eslint-disable-next-line
   }, [researcher])
 
   useEffect(() => {
