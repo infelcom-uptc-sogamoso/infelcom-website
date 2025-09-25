@@ -78,7 +78,7 @@ export const WhatWeDo = () => {
   return (
     <Box padding="30px">
       <Typography variant="h1" align="center" mt={'50px'} mb={'20px'}>
-        ¿QUE HACEMOS?
+        ¿QUÉ HACEMOS?
       </Typography>
       <Slider {...settings}>
         {whatWeDoData.map((it) => (
