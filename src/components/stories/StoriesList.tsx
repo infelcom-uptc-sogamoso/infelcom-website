@@ -37,7 +37,7 @@ export const StoriesList: FC<Props> = ({ stories, isLoading }) => {
       )}
       {isLoading && <CardSkeleton quantity={3} width={300} height={415} />}
       {stories.map((story) => (
-        <NextLink key={story.code} href={`/stories/${story?._id}`} passHref>
+        <NextLink key={story.code} href={`/stories/${story?._id}`} passHref legacyBehavior>
           <Link underline="always">
             <StoriesCard story={story} />
           </Link>
