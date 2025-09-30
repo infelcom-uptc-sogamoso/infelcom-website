@@ -86,7 +86,7 @@ const ResearchersPage = () => {
         return (
           <div className="actions-container">
             <Tooltip title="Editar">
-              <NextLink href={`/admin/researchers/${row?._id}`} passHref>
+              <NextLink href={`/admin/researchers/${row?._id}`} passHref legacyBehavior>
                 <Link underline="always">
                   <IconButton aria-label="edit" color="warning">
                     <EditIcon />
@@ -118,7 +118,7 @@ const ResearchersPage = () => {
         return (
           <div className="actions-container">
             <Tooltip title="Editar">
-              <NextLink href={`/admin/projects/${row?._id}`} passHref>
+              <NextLink href={`/admin/projects/${row?._id}`} passHref legacyBehavior>
                 <Link underline="always">
                   <IconButton aria-label="edit" color="warning">
                     <EditIcon />
@@ -164,7 +164,7 @@ const ResearchersPage = () => {
         return (
           <div className="actions-container">
             <Tooltip title="Editar">
-              <NextLink href={`/admin/stories/${row?._id}`} passHref>
+              <NextLink href={`/admin/stories/${row?._id}`} passHref legacyBehavior>
                 <Link underline="always">
                   <IconButton aria-label="edit" color="warning">
                     <EditIcon />
