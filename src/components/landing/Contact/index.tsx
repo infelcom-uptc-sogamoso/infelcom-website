@@ -72,7 +72,7 @@ export const Contact = () => {
           </Box>
           <Box gap={'12px'} display={'flex'} flexDirection={'row'}>
             <Phone />
-            <Typography variant="body1">+57 300 000 0000</Typography>
+            <Typography variant="body1">+57 3005600943</Typography>
           </Box>
         </Grid>
         <Grid item xs={12} sm={6}>
