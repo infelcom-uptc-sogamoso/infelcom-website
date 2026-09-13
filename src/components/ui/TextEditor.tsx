@@ -1,8 +1,8 @@
 import { FC, useEffect } from 'react';
-import StarterKit from '@tiptap/starter-kit';
-import Heading from '@tiptap/extension-heading';
-import TextStyle from '@tiptap/extension-text-style';
-import TextAlign from '@tiptap/extension-text-align';
+import { StarterKit } from '@tiptap/starter-kit';
+import { Heading } from '@tiptap/extension-heading';
+import { TextStyle} from '@tiptap/extension-text-style';
+import { TextAlign } from '@tiptap/extension-text-align';
 import { Box } from '@mui/material';
 import { Color } from '@tiptap/extension-color';
 import { EditorContent, useEditor } from '@tiptap/react';
