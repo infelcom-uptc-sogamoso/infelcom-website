@@ -1,95 +1,74 @@
-import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
+import NextLink from 'next/link';
+import { useRouter } from 'next/router';
+import { Button, Skeleton, Typography } from '@mui/material';
+import { ArrowBack } from '@mui/icons-material';
 import { LandingLayout } from '@/components/layouts';
 import { IStory } from '@/interfaces';
 import { infelcomApi } from '@/infelcomApis';
 import { formatDate } from '@/utils';
-import { Box, CardMedia, Typography } from '@mui/material';
-import { CardSkeleton } from '@/components/skeletons/CardSkeleton';
 
 const StoryPage = () => {
   const [story, setStory] = useState<IStory>();
-  const [newContent, setNewContent] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const { _id } = router.query;
 
   useEffect(() => {
-    if (_id && _id !== 'new') {
-      fetchStoryById(_id)
-    }
-  }, [_id])
-
-  const fetchStoryById = async (_id: any) => {
-    try {
-      await infelcomApi({
-        url: `/story/?_id=${_id}`,
-        method: 'GET',
-      }).then((res) => {
-        setIsLoading(false);
-        setStory(res.data)
-      });
-    } catch (error) {
-      console.error(error);
-    }
-  }
-
-  useEffect(() => {
-    if (story?.content) setNewContent(story.content);
-  }, [story]);
+    if (!_id || _id === 'new') return;
+    infelcomApi({ url: `/story/?_id=${_id}`, method: 'GET' })
+      .then((res) => setStory(res.data))
+      .catch((error) => console.error(error))
+      .finally(() => setIsLoading(false));
+  }, [_id]);
 
   return (
-    <LandingLayout title={story?.title || ''} pageDescription={story?.resume || ''}>
-      <Box
-        sx={{
-          p: 5,
-          pb: 0,
-          display: 'flex',
-          flexDirection: 'row',
-          justifyContent: 'center'
-        }}>
-        {isLoading
-          ? <CardSkeleton quantity={1} width={320} height={660} />
-          : (
-            <Box
-              sx={{
-                gap: '24px',
-                display: 'flex',
-                flexDirection: 'column',
-                maxWidth: '900px',
-              }}>
-              <Box
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                }}>
-                <Typography variant="h1">{story?.title}</Typography>
-                <Box>
-                  <Typography variant="body2" textAlign={'end'} fontWeight={'600'}>
-                    {formatDate(story?.createdAt || '')}
-                  </Typography>
-                </Box>
-              </Box>
-              <Typography color={'GrayText'}>{story?.resume}</Typography>
-              <Box
-                sx={{
-                  display: 'flex',
-                  justifyContent: 'center',
-                }}>
-                <CardMedia
-                  component={'img'}
-                  alt="story-img"
-                  image={story?.imageUrl}
-                  sx={{
-                    maxWidth: '800px',
-                    objectFit: 'cover',
-                  }}
-                />
-              </Box>
-              <p style={{ textAlign: 'justify' }} dangerouslySetInnerHTML={{ __html: newContent }}></p>
-            </Box>
-          )}
-      </Box>
+    <LandingLayout
+      title={story?.title || 'Noticia'}
+      pageDescription={story?.resume || 'Noticias de INFELCOM'}
+      imageFullUrl={story?.imageUrl}>
+      <article className="section container" style={{ maxWidth: 860 }}>
+        <Button
+          component={NextLink}
+          href="/stories"
+          variant="text"
+          startIcon={<ArrowBack />}
+          sx={{ mb: 3 }}>
+          Volver a noticias
+        </Button>
+        {isLoading ? (
+          <>
+            <Skeleton variant="text" height={64} />
+            <Skeleton variant="rounded" height={360} sx={{ mt: 2, borderRadius: 4 }} />
+          </>
+        ) : !story ? (
+          <Typography>No encontramos esta noticia.</Typography>
+        ) : (
+          <>
+            <Typography variant="h1">{story.title}</Typography>
+            <Typography
+              component="time"
+              dateTime={story.createdAt}
+              sx={{ display: 'block', mt: 1, color: 'primary.main', fontWeight: 600 }}>
+              {formatDate(story.createdAt)}
+            </Typography>
+            {story.resume && (
+              <Typography sx={{ mt: 2, color: 'text.secondary', fontSize: '1.1rem' }}>
+                {story.resume}
+              </Typography>
+            )}
+            {story.imageUrl && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={story.imageUrl}
+                alt={story.title}
+                style={{ width: '100%', height: 'auto', margin: '24px 0', borderRadius: 16 }}
+              />
+            )}
+            <div className="prose" dangerouslySetInnerHTML={{ __html: story.content }} />
+          </>
+        )}
+      </article>
     </LandingLayout>
   );
 };

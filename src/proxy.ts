@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 
 export async function proxy(req: NextRequest, ev: NextFetchEvent) {
-  const session = await getToken({ req, secret: process.env.NEXTAUTH_SECRET }) as any;
+  const session = (await getToken({ req, secret: process.env.NEXTAUTH_SECRET })) as any;
   if (!session) {
     return NextResponse.redirect(new URL('/auth/login', req.url));
   }

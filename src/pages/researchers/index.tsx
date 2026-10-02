@@ -1,16 +1,19 @@
 import { LandingLayout } from '@/components/layouts';
 import { ResearcherList } from '@/components/researches/ResearcherList';
+import { SectionHeading } from '@/components/ui/SectionHeading';
 import { useResearchers } from '@/hooks';
-import { Box } from '@mui/material';
 
 const Researchers = () => {
   const { researchers, isLoading } = useResearchers('/researchers');
 
   return (
-    <LandingLayout title="Investigadores" pageDescription="Investigadores">
-      <Box sx={{ padding: { xs: '60px 30px 0px', sm: '60px 60px 0px' } }}>
+    <LandingLayout
+      title="Investigadores"
+      pageDescription="Docentes y estudiantes investigadores del grupo INFELCOM.">
+      <div className="section container">
+        <SectionHeading as="h1" eyebrow="Nosotros" title="Investigadores" />
         <ResearcherList researches={researchers} isLoading={isLoading} />
-      </Box>
+      </div>
     </LandingLayout>
   );
 };

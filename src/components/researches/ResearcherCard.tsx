@@ -1,14 +1,6 @@
 import { FC } from 'react';
-import NextLink from 'next/link';
-import {
-  Card,
-  CardActionArea,
-  CardContent,
-  CardMedia,
-  Grid,
-  Link,
-  Typography,
-} from '@mui/material';
+import { OpenInNew } from '@mui/icons-material';
+import styles from './Researchers.module.css';
 
 interface Props {
   researcher: any;
@@ -25,84 +17,26 @@ export const ResearcherCard: FC<Props> = ({ researcher }) => {
   } = researcher;
 
   return (
-    <Grid
-      item
-      xs={12}
-      sm={4}
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-      }}>
-      <Card
-        sx={{
-          borderRadius: '4px',
-          height: '340px',
-          width: '300px',
-          ':hover': {
-            transition: 'all 0.5s ease-in-out',
-            filter: 'grayscale(0%)',
-          },
-        }}>
-        <CardActionArea
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            justifyItems: 'center',
-            justifyContent: 'space-around',
-            height: '340px',
-            padding: '10px',
-            filter: { xs: '', sm: 'grayscale(100%)' },
-            ':hover': {
-              transition: 'all .2s ease-in-out',
-              filter: 'grayscale(0%)',
-            },
-          }}>
-          <CardMedia
-            component={'img'}
-            className={'fadeIn'}
-            image={imageUrl || '/hero/image-not-available.jpg'}
-            alt={name}
-            sx={{
-              width: '130px',
-              height: '130px',
-              borderRadius: '50%',
-            }}
-          />
-          <CardContent
-            sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              justifyItems: 'center',
-            }}>
-            <Typography variant="subtitle1" align="center" mb={1}>
-              {name} {lastName}
-            </Typography>
-            <Typography variant="body2" align="center" mb={1}>
-              {type}
-            </Typography>
-            <Typography variant="subtitle1" align="center" mb={1}>
-              {email}
-            </Typography>
-            <NextLink href={cvlacUrl} passHref legacyBehavior>
-              <Link target="_blank">
-                <Typography
-                  variant="caption"
-                  align="center"
-                  mb={1}
-                  sx={{
-                    ':hover': {
-                      transition: 'all 0.2s ease-in-out',
-                      fontSize: '14px',
-                    },
-                  }}>
-                  Ver CvLac
-                </Typography>
-              </Link>
-            </NextLink>
-          </CardContent>
-        </CardActionArea>
-      </Card>
-    </Grid>
+    <article className={styles.card}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={imageUrl || '/hero/image-not-available.jpg'}
+        alt={`${name} ${lastName}`}
+        loading="lazy"
+        className={styles.avatar}
+      />
+      <h3 className={styles.name}>
+        {name} {lastName}
+      </h3>
+      <p className={styles.type}>{type}</p>
+      <a href={`mailto:${email}`} className={styles.email}>
+        {email}
+      </a>
+      {cvlacUrl && (
+        <a href={cvlacUrl} target="_blank" rel="noopener noreferrer" className={styles.cvlac}>
+          Ver CvLAC <OpenInNew fontSize="inherit" aria-hidden />
+        </a>
+      )}
+    </article>
   );
 };

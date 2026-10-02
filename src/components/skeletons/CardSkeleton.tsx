@@ -1,29 +1,22 @@
-import React, { FC } from 'react';
-import { Grid, Skeleton } from '@mui/material';
+import { FC } from 'react';
+import { Skeleton } from '@mui/material';
 
 interface Props {
   quantity: number;
-  width: any;
-  height: any;
+  height: number;
+  width?: number | string;
 }
 
-export const CardSkeleton: FC<Props> = ({ quantity, width, height }) => {
-  return (
-    <>
-      {[...Array(quantity)].map((_, index) => (
-        <Grid
-          item
-          key={index}
-          xs={12}
-          sm={4}
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-          }}>
-          <Skeleton variant="rectangular" width={width} height={height} />
-        </Grid>
-      ))}
-    </>
-  );
-};
+export const CardSkeleton: FC<Props> = ({ quantity, height, width = '100%' }) => (
+  <>
+    {[...Array(quantity)].map((_, index) => (
+      <Skeleton
+        key={index}
+        variant="rounded"
+        width={width}
+        height={height}
+        sx={{ borderRadius: 4 }}
+      />
+    ))}
+  </>
+);

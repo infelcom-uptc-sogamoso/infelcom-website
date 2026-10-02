@@ -50,12 +50,6 @@ const ProjectAdminPage = () => {
 
   const validGroups = ['SEMTEL', 'SCIECOM', 'SEMVR'];
 
-  useEffect(() => {
-    if (_id && _id !== 'new') {
-      fetchProjectById(_id)
-    }
-  }, [_id])
-
   const fetchProjectById = async (_id: any) => {
     try {
       await infelcomApi({
@@ -65,7 +59,13 @@ const ProjectAdminPage = () => {
     } catch (error) {
       console.error(error);
     }
-  }
+  };
+
+  useEffect(() => {
+    if (_id && _id !== 'new') {
+      fetchProjectById(_id);
+    }
+  }, [_id]);
 
   const {
     register,

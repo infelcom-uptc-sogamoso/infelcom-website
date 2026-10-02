@@ -1,6 +1,7 @@
-import { FC, useContext } from 'react';
+import { FC, ReactNode, useContext } from 'react';
 import Head from 'next/head';
-import { Navbar, SideMenu } from '../ui';
+import { Navbar } from '../ui/Navbar';
+import { SideMenu } from '../ui/SideMenu';
 import { Box, Typography } from '@mui/material';
 import Snackbar, { SnackbarCloseReason } from '@mui/material/Snackbar';
 import { UiContext } from '@/contexts';
@@ -8,8 +9,8 @@ import { UiContext } from '@/contexts';
 interface Props {
   title: string;
   subTitle: string;
-  icon?: JSX.Element;
-  children: JSX.Element | JSX.Element[];
+  icon?: ReactNode;
+  children: ReactNode;
 }
 
 export const AdminLayout: FC<Props> = ({ children, title, subTitle, icon }) => {
@@ -26,16 +27,14 @@ export const AdminLayout: FC<Props> = ({ children, title, subTitle, icon }) => {
       <Head>
         <title>{title}</title>
       </Head>
-      <nav>
-        <Navbar />
-      </nav>
+      <Navbar />
       <SideMenu />
-      <main style={{ margin: '60px' }}>
+      <main className="container" style={{ paddingBlock: 40 }}>
         <Box display="flex" flexDirection="column">
           <Typography variant="h1" component="h1">
             {icon} {title}
           </Typography>
-          <Typography variant="h2" sx={{ mb: 1 }}>
+          <Typography variant="subtitle1" component="p" sx={{ mb: 1, color: 'text.secondary' }}>
             {subTitle}
           </Typography>
         </Box>

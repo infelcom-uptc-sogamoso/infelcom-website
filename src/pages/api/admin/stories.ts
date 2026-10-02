@@ -3,7 +3,6 @@ import { IStory } from '@/interfaces';
 import { Story } from '@/models';
 import { db } from '@/database';
 import { isValidObjectId } from 'mongoose';
-import { v4 as uuid } from 'uuid';
 
 type Data = { message: string } | IStory[] | IStory;
 
@@ -65,7 +64,7 @@ const createStory = async (req: NextApiRequest, res: NextApiResponse<Data>) => {
     }
     const { title, resume, content, imageUrl } = req.body;
     const story = new Story({
-      code: uuid(),
+      code: crypto.randomUUID(),
       title,
       resume,
       content,

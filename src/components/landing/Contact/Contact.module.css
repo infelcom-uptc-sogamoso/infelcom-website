@@ -1,0 +1,92 @@
+.grid {
+  display: grid;
+  gap: 24px;
+}
+
+.info {
+  padding: 32px 24px;
+  border-radius: var(--radius);
+  background:
+    radial-gradient(80% 60% at 100% 0%, rgba(51, 204, 204, 0.18), transparent 70%), var(--ink-deep);
+  color: var(--gray-200);
+}
+
+.info p {
+  margin: 0 0 12px;
+}
+
+.info a {
+  color: var(--teal-bright);
+  overflow-wrap: anywhere;
+}
+
+.info a:focus-visible {
+  outline-color: var(--teal-bright);
+}
+
+.channels {
+  display: grid;
+  gap: 12px;
+  margin: 24px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.channels a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+
+.channels li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.channels svg {
+  flex-shrink: 0;
+  padding: 8px;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(51, 204, 204, 0.12);
+  color: var(--teal-bright);
+}
+
+.form {
+  display: grid;
+  gap: 16px;
+  align-content: start;
+}
+
+.row {
+  display: grid;
+  gap: 16px;
+}
+
+.submit {
+  justify-self: stretch;
+}
+
+@media (min-width: 600px) {
+  .row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .submit {
+    justify-self: start;
+    min-width: 160px;
+  }
+}
+
+@media (min-width: 900px) {
+  .grid {
+    grid-template-columns: 0.9fr 1.1fr;
+    gap: 48px;
+  }
+
+  .info {
+    padding: 40px;
+  }
+}

@@ -57,12 +57,6 @@ const ResearcherAdminPage = () => {
     { label: 'Estudiante', value: 'student' },
   ];
 
-  useEffect(() => {
-    if (_id && _id !== 'new') {
-      fetchResearcherById(_id)
-    }
-  }, [_id])
-
   const fetchResearcherById = async (_id: any) => {
     try {
       await infelcomApi({
@@ -72,7 +66,13 @@ const ResearcherAdminPage = () => {
     } catch (error) {
       console.error(error);
     }
-  }
+  };
+
+  useEffect(() => {
+    if (_id && _id !== 'new') {
+      fetchResearcherById(_id);
+    }
+  }, [_id]);
 
   const {
     register,
@@ -96,7 +96,7 @@ const ResearcherAdminPage = () => {
       });
     }
     // eslint-disable-next-line
-  }, [researcher])
+  }, [researcher]);
 
   useEffect(() => {
     setValue('isShowed', !checked, {

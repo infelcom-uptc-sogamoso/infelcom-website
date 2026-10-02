@@ -4,3 +4,4 @@ export * from './FormattingOptions';
 export * from './Navbar';
 export * from './SideMenu';
 export * from './TextEditor';
+export * from './SectionHeading';
