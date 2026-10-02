@@ -1,0 +1,130 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+  gap: 24px;
+}
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid #e3e8e8;
+  border-radius: var(--radius);
+  background: #fff;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s,
+    border-color 0.2s;
+}
+
+.card:hover,
+.card:focus-within {
+  transform: translateY(-4px);
+  border-color: var(--teal-bright);
+  box-shadow: var(--shadow);
+}
+
+.image {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  background: var(--gray-50);
+  animation: fadeIn 0.5s both;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 20px 20px;
+}
+
+.date {
+  color: var(--teal);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+/* Whole card is clickable through the title link (single, accessible link) */
+.link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+
+.link:focus-visible {
+  outline: none;
+}
+
+.card:has(.link:focus-visible) {
+  outline: 3px solid var(--teal);
+  outline-offset: 2px;
+}
+
+.resume {
+  margin: 0;
+  color: var(--gray-600);
+  font-size: 0.92rem;
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Phones: compact horizontal cards keep the section short */
+@media (max-width: 599px) {
+  .grid {
+    gap: 12px;
+  }
+
+  .card {
+    flex-direction: row;
+  }
+
+  .image {
+    width: 112px;
+    aspect-ratio: auto;
+    align-self: stretch;
+    flex-shrink: 0;
+  }
+
+  .body {
+    padding: 12px 14px;
+    gap: 4px;
+  }
+
+  .title {
+    font-size: 0.95rem;
+  }
+
+  .resume {
+    -webkit-line-clamp: 2;
+  }
+}
+
+.empty {
+  margin: 0;
+  text-align: center;
+  color: var(--gray-600);
+}
+
+.more {
+  display: flex;
+  justify-content: center;
+  margin-top: 32px;
+}

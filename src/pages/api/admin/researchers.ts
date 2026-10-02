@@ -3,7 +3,6 @@ import { IResearcher } from '@/interfaces';
 import { Researcher } from '@/models';
 import { db } from '@/database';
 import { isValidObjectId } from 'mongoose';
-import { v4 as uuid } from 'uuid';
 
 type Data = { message: string } | IResearcher[] | IResearcher;
 
@@ -66,7 +65,7 @@ const createResearcher = async (req: NextApiRequest, res: NextApiResponse<Data>)
     }
     const { imageUrl, name, lastName, type, email, cvlacUrl, isShowed, category, role } = req.body;
     const researcher = new Researcher({
-      code: uuid(),
+      code: crypto.randomUUID(),
       imageUrl,
       name,
       lastName,

@@ -1,44 +1,52 @@
-'use client';
-import NextLink from 'next/link';
-import { AppBar, Box, Button, IconButton, Link, Toolbar, Typography } from '@mui/material';
-import MenuOutlinedIcon from '@mui/icons-material/MenuOutlined';
 import { useContext } from 'react';
+import Image from 'next/image';
+import NextLink from 'next/link';
+import { useRouter } from 'next/router';
+import MenuIcon from '@mui/icons-material/Menu';
 import { UiContext } from '@/contexts';
-import { usePathname } from 'next/navigation';
+import { NAV_LINKS, SITE_NAME } from '@/utils/site';
+import styles from './Navbar.module.css';
 
 export const Navbar = () => {
-  const { toogleSideMenu } = useContext(UiContext);
-  const pathname = usePathname();
+  const { isMenuOpen, toogleSideMenu } = useContext(UiContext);
+  const { pathname } = useRouter();
+  const isAdmin = pathname.startsWith('/admin');
 
   return (
-    <AppBar style={{ position: 'sticky', top: 0, zIndex: 1000 }}>
-      <Toolbar>
-        <NextLink href={'/'} passHref legacyBehavior>
-          <Link display={'flex'} alignItems={'center'}>
-            <Typography variant="h5" fontWeight={500} sx={{ ml: 1 }} color={'primary'}>
-              INFELCOM
-            </Typography>
-          </Link>
+    <header className={styles.header}>
+      <div className={`container ${styles.bar}`}>
+        <NextLink href="/" className={styles.brand} aria-label={`${SITE_NAME}, ir al inicio`}>
+          <Image src="/logo.png" alt="" width={36} height={36} priority />
+          <span>{SITE_NAME}</span>
         </NextLink>
-        <Box flex={1} />
-        {!pathname?.includes('/admin') && (
-          <Box sx={{ display: { xs: 'none', sm: 'flex' } }}>
-            <NextLink href={'/researchers'} passHref legacyBehavior>
-              <Link>
-                <Button sx={{ ml: 0.5 }}>Nosotros</Button>
-              </Link>
-            </NextLink>
-            <NextLink href={'/projects'} passHref legacyBehavior>
-              <Link>
-                <Button sx={{ ml: 0.5 }}>Proyectos</Button>
-              </Link>
-            </NextLink>
-          </Box>
+
+        {!isAdmin && (
+          <nav aria-label="Principal" className={styles.nav}>
+            <ul>
+              {NAV_LINKS.map(({ href, label }) => (
+                <li key={href}>
+                  <NextLink
+                    href={href}
+                    className={styles.link}
+                    aria-current={pathname === href ? 'page' : undefined}>
+                    {label}
+                  </NextLink>
+                </li>
+              ))}
+            </ul>
+          </nav>
         )}
-        <IconButton onClick={toogleSideMenu}>
-          <MenuOutlinedIcon color="primary" />
-        </IconButton>
-      </Toolbar>
-    </AppBar>
+
+        <button
+          type="button"
+          className={styles.menuBtn}
+          onClick={toogleSideMenu}
+          aria-label="Abrir menú"
+          aria-expanded={isMenuOpen}
+          aria-controls="side-menu">
+          <MenuIcon />
+        </button>
+      </div>
+    </header>
   );
 };

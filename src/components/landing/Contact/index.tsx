@@ -1,8 +1,11 @@
-'use client';
-import { infelcomApi } from '@/infelcomApis';
-import { Mail, Phone, Place } from '@mui/icons-material';
-import { Box, Button, Grid, TextField, Typography } from '@mui/material';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { Alert, Button, TextField } from '@mui/material';
+import { Mail, Phone, Place, Send } from '@mui/icons-material';
+import { infelcomApi } from '@/infelcomApis';
+import { CONTACT } from '@/utils/site';
+import { SectionHeading } from '@/components/ui/SectionHeading';
+import styles from './Contact.module.css';
 
 interface FormData {
   name: string;
@@ -13,168 +16,131 @@ interface FormData {
   message: string;
 }
 
+const required = {
+  required: 'Este campo es requerido',
+  minLength: { value: 2, message: 'Mínimo 2 caracteres' },
+};
+
 export const Contact = () => {
-  const { GRUPLAC_URL } = process.env;
+  const [status, setStatus] = useState<'success' | 'error' | null>(null);
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
     reset,
   } = useForm<FormData>();
 
   const sendEmail = async (form: FormData) => {
+    setStatus(null);
     try {
-      await infelcomApi({
-        url: '/contact/contact',
-        method: 'POST',
-        data: form,
-      }).then(() => reset());
+      await infelcomApi({ url: '/contact/contact', method: 'POST', data: form });
+      reset();
+      setStatus('success');
     } catch (error) {
       console.error(error);
+      setStatus('error');
     }
   };
 
+  const field = (name: keyof FormData, rules: object = required) => ({
+    ...register(name, rules),
+    error: !!errors[name],
+    helperText: errors[name]?.message,
+    fullWidth: true,
+  });
+
   return (
-    <Box sx={{ width: { xs: '100%', sm: '89%' } }}>
-      <Grid
-        container
-        sx={{
-          flexDirection: { xs: 'column', sm: 'row' },
-        }}>
-        <Grid
-          item
-          xs={12}
-          sm={6}
-          sx={{
-            gap: '12px',
-            display: 'flex',
-            flexDirection: 'column',
-            marginBottom: { xs: '24px', sm: '0px' },
-          }}>
-          <Typography variant="h1">Contáctanos</Typography>
-          <Typography variant="body1">
-            ¿Te gustaría colaborar con nuestro semillero de investigación?
-            <br />
-            Únete a nuestro equipo, desarrolla proyectos innovadores y comparte conocimientos.
-            <br />
-            Si deseas conocer más sobre nuestro trabajo, te invitamos a visitar nuestro{' '}
-            <a href={GRUPLAC_URL} target="_blank" rel="noopener noreferrer" className="link">
-              GrupLAC
-            </a>
-          </Typography>
-          <Box gap={'12px'} display={'flex'} flexDirection={'row'}>
-            <Place />
-            <Typography variant="body1">Calle 4 Sur No. 15-134 - Sogamoso, Boyacá</Typography>
-          </Box>
-          <Box gap={'12px'} display={'flex'} flexDirection={'row'}>
-            <Mail />
-            <Typography variant="body1">infelcom@uptc.edu.co</Typography>
-          </Box>
-          <Box gap={'12px'} display={'flex'} flexDirection={'row'}>
-            <Phone />
-            <Typography variant="body1">+57 3005600943</Typography>
-          </Box>
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <form onSubmit={handleSubmit(sendEmail)}>
-            <Box
-              sx={{
-                gap: '8px',
-                display: 'flex',
-                flexDirection: { xs: 'column', sm: 'row' },
-                marginBottom: '12px',
-              }}>
-              <TextField
-                label="Nombre(s)"
-                variant="outlined"
-                fullWidth
-                multiline
-                {...register('name', {
-                  required: 'Este campo es requerido',
-                  minLength: { value: 2, message: 'Mínimo 2 caracteres' },
-                })}
-                error={!!errors.name}
-                helperText={errors.name?.message}
-              />
-              <TextField
-                label="Apellido(s)"
-                variant="outlined"
-                fullWidth
-                multiline
-                {...register('lastName', {
-                  required: 'Este campo es requerido',
-                  minLength: { value: 2, message: 'Mínimo 2 caracteres' },
-                })}
-                error={!!errors.lastName}
-                helperText={errors.lastName?.message}
-              />
-            </Box>
-            <Box
-              sx={{
-                gap: '8px',
-                display: 'flex',
-                flexDirection: { xs: 'column', sm: 'row' },
-                marginBottom: '12px',
-              }}>
-              <TextField
-                type="number"
-                label="Teléfono"
-                variant="outlined"
-                fullWidth
-                multiline
-                {...register('phone', {
-                  required: 'Este campo es requerido',
-                  minLength: { value: 2, message: 'Mínimo 2 caracteres' },
-                })}
-                error={!!errors.phone}
-                helperText={errors.phone?.message}
-              />
-              <TextField
-                label="Correo electrónico"
-                variant="outlined"
-                fullWidth
-                multiline
-                {...register('fromEmail', {
-                  required: 'Este campo es requerido',
-                  minLength: { value: 2, message: 'Mínimo 2 caracteres' },
-                })}
-                error={!!errors.fromEmail}
-                helperText={errors.fromEmail?.message}
-              />
-            </Box>
+    <section id="contact" className="section" aria-labelledby="contact-title">
+      <div className={`container ${styles.grid}`}>
+        <div className={styles.info}>
+          <SectionHeading
+            id="contact-title"
+            eyebrow="Contacto"
+            title="Contáctanos"
+            dark
+            align="left"
+          />
+          <p>
+            ¿Te gustaría colaborar con nuestro semillero de investigación? Únete a nuestro equipo,
+            desarrolla proyectos innovadores y comparte conocimientos.
+          </p>
+          {CONTACT.gruplacUrl && (
+            <p>
+              Si deseas conocer más sobre nuestro trabajo, te invitamos a visitar nuestro{' '}
+              <a href={CONTACT.gruplacUrl} target="_blank" rel="noopener noreferrer">
+                GrupLAC
+              </a>
+              .
+            </p>
+          )}
+          <ul className={styles.channels}>
+            <li>
+              <Place aria-hidden />
+              <span>{CONTACT.address}</span>
+            </li>
+            <li>
+              <Mail aria-hidden />
+              <a href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a>
+            </li>
+            <li>
+              <Phone aria-hidden />
+              <a href={`tel:${CONTACT.phone.replace(/\s/g, '')}`}>{CONTACT.phone}</a>
+            </li>
+          </ul>
+        </div>
+
+        <form className={styles.form} onSubmit={handleSubmit(sendEmail)} noValidate>
+          <div className={styles.row}>
+            <TextField label="Nombre(s)" autoComplete="given-name" {...field('name')} />
+            <TextField label="Apellido(s)" autoComplete="family-name" {...field('lastName')} />
+          </div>
+          <div className={styles.row}>
             <TextField
-              label="Institución o escuela"
-              variant="outlined"
-              fullWidth
-              multiline
-              sx={{ mb: '12px' }}
-              {...register('institution', {
-                required: 'Este campo es requerido',
-                minLength: { value: 2, message: 'Mínimo 2 caracteres' },
+              label="Teléfono"
+              type="tel"
+              inputMode="tel"
+              autoComplete="tel"
+              {...field('phone', {
+                ...required,
+                pattern: { value: /^[+\d\s()-]{7,}$/, message: 'Teléfono no válido' },
               })}
-              error={!!errors.institution}
-              helperText={errors.institution?.message}
             />
             <TextField
-              rows={4}
-              multiline
-              label="Escribe aquí tu mensaje"
-              variant="outlined"
-              fullWidth
-              sx={{ mb: '12px' }}
-              {...register('message', {
-                required: 'Este campo es requerido',
-                minLength: { value: 2, message: 'Mínimo 2 caracteres' },
+              label="Correo electrónico"
+              type="email"
+              autoComplete="email"
+              {...field('fromEmail', {
+                ...required,
+                pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Correo no válido' },
               })}
-              error={!!errors.message}
-              helperText={errors.message?.message}
             />
-            <Button type="submit" sx={{ width: '100px' }}>
-              Enviar
-            </Button>
-          </form>
-        </Grid>
-      </Grid>
-    </Box>
+          </div>
+          <TextField
+            label="Institución o escuela"
+            autoComplete="organization"
+            {...field('institution')}
+          />
+          <TextField label="Escribe aquí tu mensaje" multiline minRows={4} {...field('message')} />
+          <div role="status" aria-live="polite">
+            {status === 'success' && (
+              <Alert severity="success">Se ha enviado tu solicitud de contacto.</Alert>
+            )}
+            {status === 'error' && (
+              <Alert severity="error">
+                No pudimos enviar tu mensaje. Inténtalo de nuevo o escríbenos a {CONTACT.email}.
+              </Alert>
+            )}
+          </div>
+          <Button
+            type="submit"
+            size="large"
+            endIcon={<Send />}
+            disabled={isSubmitting}
+            className={styles.submit}>
+            {isSubmitting ? 'Enviando…' : 'Enviar'}
+          </Button>
+        </form>
+      </div>
+    </section>
   );
 };

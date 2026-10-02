@@ -1,18 +1,13 @@
 import { FC } from 'react';
-import NextLink from 'next/link';
 import {
   Accordion,
   AccordionActions,
   AccordionDetails,
   AccordionSummary,
-  Box,
   Button,
-  CardMedia,
-  Grid,
-  Link,
   Typography,
 } from '@mui/material';
-import { ExpandMore } from '@mui/icons-material';
+import { ExpandMore, OpenInNew } from '@mui/icons-material';
 
 interface Props {
   project: any;
@@ -20,6 +15,7 @@ interface Props {
 
 export const ProjectCard: FC<Props> = ({ project }) => {
   const {
+    code = 'preview',
     title = 'Título del proyecto',
     description = 'Descripción del proyecto',
     image,
@@ -27,44 +23,52 @@ export const ProjectCard: FC<Props> = ({ project }) => {
   } = project;
 
   return (
-    <Grid item sx={{ width: { xs: '100%', sm: '70%' } }}>
-      <Accordion sx={{ width: '100%' }}>
-        <AccordionSummary
-          expandIcon={<ExpandMore />}
-          aria-controls="panel1-content"
-          id="panel1-header">
-          <Typography variant="body1" sx={{ color: '#5D6363' }}>
-            {title}
-          </Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Box display={'flex'} justifyContent={'center'}>
-            <CardMedia
-              component="img"
-              image={image}
-              alt={title}
-              sx={{ maxWidth: '600px', marginBottom: '16px' }}
-            />
-          </Box>
-          <Typography
-            variant="caption"
-            sx={{
-              color: '#5D6363',
-              textAlign: 'justify',
-            }}>
-            {description}
-          </Typography>
-        </AccordionDetails>
-        {url && (
-          <AccordionActions>
-            <NextLink href={url} passHref legacyBehavior>
-              <Link target="_blank">
-                <Button>Ver proyecto</Button>
-              </Link>
-            </NextLink>
-          </AccordionActions>
+    <Accordion
+      disableGutters
+      sx={{
+        width: '100%',
+        border: '1px solid #e3e8e8',
+        borderRadius: '16px !important',
+        '&::before': { display: 'none' },
+        '&.Mui-expanded': { borderColor: 'primary.light', boxShadow: 'var(--shadow)' },
+      }}>
+      <AccordionSummary
+        expandIcon={<ExpandMore />}
+        aria-controls={`project-${code}-content`}
+        id={`project-${code}-header`}
+        sx={{ minHeight: 56, px: { xs: 2, sm: 3 } }}>
+        <Typography component="span" variant="subtitle1" sx={{ fontWeight: 600 }}>
+          {title}
+        </Typography>
+      </AccordionSummary>
+      <AccordionDetails sx={{ px: { xs: 2, sm: 3 } }}>
+        {image && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={image}
+            alt={title}
+            loading="lazy"
+            style={{
+              display: 'block',
+              width: '100%',
+              maxWidth: 600,
+              height: 'auto',
+              margin: '0 auto 16px',
+              borderRadius: 12,
+            }}
+          />
         )}
-      </Accordion>
-    </Grid>
+        <Typography variant="body2" sx={{ color: 'text.secondary', lineHeight: 1.7 }}>
+          {description}
+        </Typography>
+      </AccordionDetails>
+      {url && (
+        <AccordionActions sx={{ px: { xs: 2, sm: 3 }, pb: 2 }}>
+          <Button href={url} target="_blank" rel="noopener noreferrer" endIcon={<OpenInNew />}>
+            Ver proyecto
+          </Button>
+        </AccordionActions>
+      )}
+    </Accordion>
   );
 };

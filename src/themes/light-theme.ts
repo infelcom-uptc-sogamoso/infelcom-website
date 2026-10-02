@@ -1,97 +1,72 @@
+import { Poppins } from 'next/font/google';
 import { createTheme } from '@mui/material/styles';
 
+// Self-hosted by next/font: no render-blocking request to Google Fonts.
+const poppins = Poppins({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700'],
+  display: 'swap',
+});
+
+// Keep in sync with the CSS variables in src/styles/globals.css
+const ink = '#222222';
+const teal = '#0a7d84';
+
 export const lightTheme = createTheme({
+  shape: { borderRadius: 12 },
   typography: {
-    fontFamily: [
-      'Poppins',
-      '-apple-system',
-      'BlinkMacSystemFont',
-      'Segoe UI',
-      'Roboto',
-      'Helvetica Neue',
-      'Arial',
-      'sans-serif',
-    ].join(','),
+    fontFamily: `${poppins.style.fontFamily}, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif`,
+    h1: { fontSize: 'clamp(1.9rem, 1.2rem + 3vw, 3.25rem)', fontWeight: 700, lineHeight: 1.15 },
+    h2: { fontSize: 'clamp(1.6rem, 1.2rem + 1.6vw, 2.4rem)', fontWeight: 700, lineHeight: 1.2 },
+    h3: { fontSize: 'clamp(1.25rem, 1.1rem + 0.6vw, 1.5rem)', fontWeight: 600, lineHeight: 1.3 },
+    h4: { fontSize: '1.25rem', fontWeight: 600 },
+    h5: { fontSize: '1.125rem', fontWeight: 600 },
+    h6: { fontSize: '1rem', fontWeight: 600 },
+    subtitle1: { fontSize: '1.0625rem', fontWeight: 600 },
+    subtitle2: { fontSize: '1.125rem', fontWeight: 600 },
+    body1: { lineHeight: 1.65 },
+    button: { textTransform: 'none', fontWeight: 600 },
   },
   palette: {
     mode: 'light',
-    primary: {
-      main: '#D5DBDB',
-    },
-    secondary: {
-      main: '#B3B2AE',
-    },
-    info: {
-      main: '#222222',
-    },
+    primary: { main: teal, dark: '#075f65', light: '#33cccc', contrastText: '#ffffff' },
+    secondary: { main: '#5D6363', contrastText: '#ffffff' },
+    info: { main: ink, contrastText: '#ffffff' },
+    text: { primary: ink, secondary: '#5D6363' },
+    background: { default: '#ffffff' },
   },
   components: {
     MuiLink: {
-      defaultProps: {
-        underline: 'none',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-      },
+      defaultProps: { underline: 'hover' },
     },
     MuiAppBar: {
-      defaultProps: {
-        elevation: 0,
-        position: 'fixed',
-      },
-      styleOverrides: {
-        root: {
-          backgroundColor: '#222222',
-        },
-      },
-    },
-    MuiTypography: {
-      styleOverrides: {
-        h1: {
-          fontSize: 30,
-          fontWeight: 600,
-        },
-        h2: {
-          fontSize: 20,
-          fontWeight: 400,
-        },
-        subtitle1: {
-          fontSize: 18,
-          fontWeight: 600,
-        },
-        subtitle2: {
-          fontSize: 20,
-          fontWeight: 600,
-        },
-        root: {
-          color: '#222222',
-        },
-      },
+      defaultProps: { elevation: 0 },
     },
     MuiButton: {
-      defaultProps: {
-        variant: 'contained',
-        size: 'small',
-        disableElevation: true,
-        color: 'info',
-      },
+      defaultProps: { variant: 'contained', disableElevation: true },
       styleOverrides: {
         root: {
-          fontSize: '16px',
-          textTransform: 'none',
-          boxShadow: 'none',
-          borderRadius: 10,
-          ':hover': {
-            color: '#222222',
-            backgroundColor: '#D5DBDB',
-            transition: 'all 0.3s ease-in-out',
-          },
+          borderRadius: 999,
+          paddingInline: 20,
+          minHeight: 44,
+          transition: 'background-color .2s, color .2s, transform .2s, box-shadow .2s',
+          '&:hover': { transform: 'translateY(-1px)' },
+          '&:active': { transform: 'translateY(0)' },
         },
+        sizeSmall: { minHeight: 36, paddingInline: 14 },
       },
     },
     MuiCard: {
-      defaultProps: {
-        elevation: 0,
+      defaultProps: { elevation: 0 },
+      styleOverrides: {
+        root: { border: '1px solid #e3e8e8', borderRadius: 16 },
+      },
+    },
+    MuiButtonBase: {
+      styleOverrides: {
+        root: {
+          '&.Mui-focusVisible': { outline: `3px solid ${teal}`, outlineOffset: 2 },
+        },
       },
     },
   },

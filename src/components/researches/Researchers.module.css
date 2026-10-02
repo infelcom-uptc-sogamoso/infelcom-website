@@ -1,0 +1,130 @@
+.group + .group {
+  margin-top: 56px;
+}
+
+.groupTitle {
+  margin: 0 0 24px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e3e8e8;
+  font-size: clamp(1.3rem, 1.1rem + 0.8vw, 1.7rem);
+  font-weight: 700;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+  gap: 20px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  max-width: 320px;
+  margin-inline: auto;
+  padding: 28px 20px 24px;
+  border: 1px solid #e3e8e8;
+  border-radius: var(--radius);
+  background: #fff;
+  text-align: center;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s,
+    border-color 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  border-color: var(--teal-bright);
+  box-shadow: var(--shadow);
+}
+
+.avatar {
+  width: 120px;
+  height: 120px;
+  margin-bottom: 12px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow:
+    0 0 0 4px #fff,
+    0 0 0 6px var(--gray-200);
+  animation: fadeIn 0.5s both;
+}
+
+.name {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.type {
+  margin: 0;
+  color: var(--gray-600);
+  font-size: 0.9rem;
+}
+
+.email {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--ink);
+  font-size: 0.85rem;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.cvlac {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 40px;
+  margin-top: 4px;
+  padding: 0 14px;
+  border-radius: 999px;
+  color: var(--teal);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+
+.cvlac:hover {
+  background: rgba(10, 125, 132, 0.08);
+}
+
+/* Phones: compact rows so long rosters don't become an endless scroll */
+@media (max-width: 599px) {
+  .grid {
+    gap: 12px;
+  }
+
+  .card {
+    display: grid;
+    grid-template-columns: 72px 1fr;
+    column-gap: 16px;
+    align-items: center;
+    max-width: none;
+    padding: 16px;
+    text-align: left;
+  }
+
+  .avatar {
+    grid-row: span 4;
+    width: 72px;
+    height: 72px;
+    margin: 0;
+  }
+
+  .email,
+  .cvlac {
+    min-height: 40px;
+    margin: 0;
+  }
+
+  .cvlac {
+    justify-self: start;
+    padding: 0;
+  }
+}

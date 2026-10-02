@@ -2,7 +2,7 @@ import { useContext } from 'react';
 import NextLink from 'next/link';
 import { UiContext } from '@/contexts';
 import useSWR, { mutate } from 'swr';
-import { Box, Button, Divider, Grid, IconButton, Link, Tooltip, Typography } from '@mui/material';
+import { Box, Button, Divider, Grid, IconButton, Tooltip, Typography } from '@mui/material';
 import { AddOutlined, CategoryOutlined } from '@mui/icons-material';
 import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import { IProject, IResearcher, IStory } from '@/interfaces';
@@ -14,14 +14,11 @@ import { formatDate } from '@/utils';
 
 const ResearchersPage = () => {
   const { toogleSnackbar } = useContext(UiContext);
-  const { data: researchersData } = useSWR<IResearcher[]>(
-    '/api/admin/researchers',
-    {
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-      refreshInterval: 0,
-    },
-  );
+  const { data: researchersData } = useSWR<IResearcher[]>('/api/admin/researchers', {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    refreshInterval: 0,
+  });
   const { data: storiesData } = useSWR<IStory[]>('/api/admin/stories', {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
@@ -86,20 +83,23 @@ const ResearchersPage = () => {
         return (
           <div className="actions-container">
             <Tooltip title="Editar">
-              <NextLink href={`/admin/researchers/${row?._id}`} passHref legacyBehavior>
-                <Link underline="always">
-                  <IconButton aria-label="edit" color="warning">
-                    <EditIcon />
-                  </IconButton>
-                </Link>
-              </NextLink>
+              <IconButton
+                component={NextLink}
+                href={`/admin/researchers/${row?._id}`}
+                aria-label="edit"
+                color="warning">
+                <EditIcon />
+              </IconButton>
             </Tooltip>
             <Tooltip title="Eliminar">
-              <IconButton aria-label="delete" color="error" onClick={() => deleteResearcher(row?._id)}>
+              <IconButton
+                aria-label="delete"
+                color="error"
+                onClick={() => deleteResearcher(row?._id)}>
                 <DeleteIcon />
               </IconButton>
             </Tooltip>
-          </div >
+          </div>
         );
       },
     },
@@ -118,13 +118,13 @@ const ResearchersPage = () => {
         return (
           <div className="actions-container">
             <Tooltip title="Editar">
-              <NextLink href={`/admin/projects/${row?._id}`} passHref legacyBehavior>
-                <Link underline="always">
-                  <IconButton aria-label="edit" color="warning">
-                    <EditIcon />
-                  </IconButton>
-                </Link>
-              </NextLink>
+              <IconButton
+                component={NextLink}
+                href={`/admin/projects/${row?._id}`}
+                aria-label="edit"
+                color="warning">
+                <EditIcon />
+              </IconButton>
             </Tooltip>
             <Tooltip title="Eliminar">
               <IconButton aria-label="delete" color="error" onClick={() => deleteProject(row?._id)}>
@@ -164,13 +164,13 @@ const ResearchersPage = () => {
         return (
           <div className="actions-container">
             <Tooltip title="Editar">
-              <NextLink href={`/admin/stories/${row?._id}`} passHref legacyBehavior>
-                <Link underline="always">
-                  <IconButton aria-label="edit" color="warning">
-                    <EditIcon />
-                  </IconButton>
-                </Link>
-              </NextLink>
+              <IconButton
+                component={NextLink}
+                href={`/admin/stories/${row?._id}`}
+                aria-label="edit"
+                color="warning">
+                <EditIcon />
+              </IconButton>
             </Tooltip>
             <Tooltip title="Eliminar">
               <IconButton aria-label="delete" color="error" onClick={() => deleteStory(row?._id)}>
@@ -225,7 +225,9 @@ const ResearchersPage = () => {
       subTitle={'Mantenimiento de contenido'}
       icon={<CategoryOutlined />}>
       <Box display="flex" justifyContent="space-between" sx={{ mb: 2, mt: 2 }}>
-        <Typography variant="subtitle2">{researchersData && `Investigadores (${researchersData?.length})`}</Typography>
+        <Typography variant="subtitle2">
+          {researchersData && `Investigadores (${researchersData?.length})`}
+        </Typography>
         <Button startIcon={<AddOutlined />} color="primary" href="/admin/researchers/new">
           Nuevo investigador
         </Button>

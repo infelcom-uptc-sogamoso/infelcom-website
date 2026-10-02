@@ -1,48 +1,44 @@
 import { FC } from 'react';
 import NextLink from 'next/link';
+import { Button } from '@mui/material';
+import { ArrowForward } from '@mui/icons-material';
 import { IStory } from '@/interfaces';
 import { StoriesCard } from './StoriesCard';
-import { Box, Button, Link } from '@mui/material';
-import { AddOutlined } from '@mui/icons-material';
-import { useRouter } from 'next/router';
 import { CardSkeleton } from '../skeletons/CardSkeleton';
+import styles from './Stories.module.css';
 
 interface Props {
   stories: IStory[];
   isLoading: boolean;
+  /** Home preview: shows the latest `limit` stories without summaries plus a link to all. */
+  limit?: number;
 }
 
-export const StoriesList: FC<Props> = ({ stories, isLoading }) => {
-  const route = useRouter();
+export const StoriesList: FC<Props> = ({ stories, isLoading, limit }) => {
+  const visible = limit ? stories.slice(0, limit) : stories;
 
   return (
-    <Box
-      padding={'30px'}
-      sx={{
-        display: 'flex',
-        flexDirection: { xs: 'column', sm: 'row' },
-        alignItems: 'flex-start',
-        justifyContent: 'space-evenly',
-      }}>
-      {stories.length > 4 && route.pathname === '/' && (
-        <Box display="flex" justifyContent="flex-end">
-          <Button
-            startIcon={<AddOutlined />}
-            color="primary"
-            href="/stories"
-            sx={{ width: 'fit-content' }}>
-            Ver mas
-          </Button>
-        </Box>
+    <>
+      <div className={styles.grid} aria-busy={isLoading}>
+        {isLoading && <CardSkeleton quantity={3} height={360} />}
+        {visible.map((story) => (
+          <StoriesCard key={story.code} story={story} compact={!!limit} />
+        ))}
+      </div>
+      {!isLoading && stories.length === 0 && (
+        <p className={styles.empty}>Aún no hay noticias publicadas.</p>
       )}
-      {isLoading && <CardSkeleton quantity={3} width={300} height={415} />}
-      {stories.map((story) => (
-        <NextLink key={story.code} href={`/stories/${story?._id}`} passHref legacyBehavior>
-          <Link underline="always">
-            <StoriesCard story={story} />
-          </Link>
-        </NextLink>
-      ))}
-    </Box>
+      {limit && stories.length > limit && (
+        <div className={styles.more}>
+          <Button
+            component={NextLink}
+            href="/stories"
+            variant="outlined"
+            endIcon={<ArrowForward />}>
+            Ver todas las noticias
+          </Button>
+        </div>
+      )}
+    </>
   );
 };

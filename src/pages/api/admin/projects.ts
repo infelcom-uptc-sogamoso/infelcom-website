@@ -3,7 +3,6 @@ import { IProject } from '@/interfaces';
 import { Project } from '@/models';
 import { db } from '@/database';
 import { isValidObjectId } from 'mongoose';
-import { v4 as uuid } from 'uuid';
 
 type Data = { message: string } | IProject[] | IProject;
 
@@ -65,7 +64,7 @@ const createProject = async (req: NextApiRequest, res: NextApiResponse<Data>) =>
     }
     const { title, description, image, url, category, group } = req.body;
     const project = new Project({
-      code: uuid(),
+      code: crypto.randomUUID(),
       title,
       description,
       image,

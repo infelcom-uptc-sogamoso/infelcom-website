@@ -30,12 +30,6 @@ const StoryAdminPage = () => {
   const router = useRouter();
   const { _id } = router.query;
 
-  useEffect(() => {
-    if (_id && _id !== 'new') {
-      fetchStoryById(_id)
-    }
-  }, [_id])
-
   const fetchStoryById = async (_id: any) => {
     try {
       await infelcomApi({
@@ -45,7 +39,13 @@ const StoryAdminPage = () => {
     } catch (error) {
       console.error(error);
     }
-  }
+  };
+
+  useEffect(() => {
+    if (_id && _id !== 'new') {
+      fetchStoryById(_id);
+    }
+  }, [_id]);
 
   const {
     register,
