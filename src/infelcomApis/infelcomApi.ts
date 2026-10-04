@@ -11,6 +11,7 @@ export const apiErrorMessage = (error: unknown, t: Messages) => {
   if (!error.response) return t.admin.networkError;
   if (error.response.status === 401) return t.admin.unauthorized;
   if (error.response.status === 400) return t.admin.invalidData;
+  if (error.response.status === 409) return t.admin.duplicate;
   return t.admin.saveError;
 };
 

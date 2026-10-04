@@ -21,15 +21,8 @@ const projectSchema = new Schema(
         required: true,
       },
     },
-    group: {
-      type: String,
-      enum: {
-        values: ['SEMTEL', 'SCIECOM', 'SEMVR'],
-        message: '{VALUE} no es un grupo valido',
-        default: 'SCIECOM',
-        required: true,
-      },
-    },
+    // Code of the research group (groups collection); '' = not in any group.
+    group: { type: String, default: '' },
     // Optional English versions; empty → the Spanish field above is shown.
     en: { title: { type: String }, description: { type: String } },
   },

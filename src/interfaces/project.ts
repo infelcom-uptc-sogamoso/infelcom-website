@@ -8,7 +8,10 @@ export interface IProject {
   url: string;
   category: IProjectCategory;
   group: IProjectGroup;
+  /** Added by GET /api/project: the group's public data. */
+  groupInfo?: { code: string; slug: string; name: string; en?: { name?: string } } | null;
 }
 
 export type IProjectCategory = 'undergraduate' | 'master' | 'doctoral';
-export type IProjectGroup = 'SEMTEL' | 'SCIECOM' | 'SEMVR';
+/** A group code from the groups collection, or '' when the project is not in a group. */
+export type IProjectGroup = string;

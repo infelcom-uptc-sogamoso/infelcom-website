@@ -1,5 +1,8 @@
-import { FormProvider, useWatch } from 'react-hook-form';
-import { Divider, Grid, Stack } from '@mui/material';
+import { useEffect } from 'react';
+import { useRouter } from 'next/router';
+import useSWR from 'swr';
+import { Controller, FormProvider, useWatch } from 'react-hook-form';
+import { Divider, Grid, MenuItem, Stack, TextField } from '@mui/material';
 import { Assignment } from '@mui/icons-material';
 import { AdminLayout } from '@/components/layouts';
 import {
@@ -12,20 +15,35 @@ import {
   useEntityForm,
 } from '@/components/admin/EntityForm';
 import { ProjectCard } from '@/components/projects/ProjectCard';
-import { IProject } from '@/interfaces';
+import { IGroup, IProject } from '@/interfaces';
 import { useT } from '@/i18n/useT';
+import { inLocale } from '@/i18n/locale';
 
-const GROUPS = ['SEMTEL', 'SCIECOM', 'SEMVR'];
 const CATEGORIES = ['undergraduate', 'master', 'doctoral'] as const;
 
 const ProjectAdminPage = () => {
-  const { t } = useT();
-  const { form, onSubmit, notice, record, loadError } = useEntityForm<IProject>(
+  const { t, locale } = useT();
+  const { query } = useRouter();
+  const { form, onSubmit, notice, record, loadError, isNew } = useEntityForm<IProject>(
     'projects',
     'project',
-    { title: '', description: '', image: '', url: '', en: { title: '', description: '' } },
+    {
+      title: '',
+      description: '',
+      image: '',
+      url: '',
+      group: '',
+      en: { title: '', description: '' },
+    },
   );
   const preview = useWatch({ control: form.control });
+  const { data: groups = [] } = useSWR<IGroup[]>('/api/admin/groups', { revalidateOnFocus: false });
+
+  // "Create a project in this group" (group edit page) links here with ?group=<code>.
+  const { setValue } = form;
+  useEffect(() => {
+    if (isNew && typeof query.group === 'string') setValue('group', query.group);
+  }, [isNew, query.group, setValue]);
 
   return (
     <AdminLayout
@@ -39,12 +57,33 @@ const ProjectAdminPage = () => {
             <Grid item xs={12} md={7}>
               <Stack spacing={2}>
                 <BilingualText name="title" label={t.admin.form.title} minLength={2} />
-                <BilingualText name="description" label={t.admin.form.summary} minLength={2} multiline rows={4} />
+                <BilingualText
+                  name="description"
+                  label={t.admin.form.summary}
+                  minLength={2}
+                  multiline
+                  rows={4}
+                />
                 <FormText name="url" label={t.admin.form.demoUrl} type="url" />
-                <RadioField
+                <Controller
                   name="group"
-                  label={t.admin.form.group}
-                  options={GROUPS.map((g) => ({ value: g, label: g }))}
+                  control={form.control}
+                  render={({ field }) => (
+                    <TextField
+                      select
+                      label={t.admin.form.group}
+                      InputLabelProps={{ shrink: true }}
+                      SelectProps={{ displayEmpty: true }}
+                      {...field}
+                      value={groups.length ? (field.value ?? '') : ''}>
+                      <MenuItem value="">{t.admin.form.noGroup}</MenuItem>
+                      {groups.map((g) => (
+                        <MenuItem key={g.code} value={g.code}>
+                          {g.code} · {inLocale(g, 'name', locale)}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  )}
                 />
                 <RadioField
                   name="category"

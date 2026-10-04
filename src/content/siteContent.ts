@@ -112,12 +112,7 @@ export const defaultContent = {
   groups: {
     eyebrow: l('Semilleros', 'Research groups'),
     title: l('Nuestros grupos de investigación', 'Our research groups'),
-    items: [
-      { name: 'SEMTEL', description: l('Semillero de Telecomunicaciones', 'Telecommunications research group'), logo: '/semilleros/semtel.png' },
-      { name: 'SCIECOM', description: l('Semillero de Ciencias computacionales', 'Computer science research group'), logo: '/semilleros/sciecom.png' },
-      { name: 'SEMVR', description: l('Semillero de Realidad Virtual', 'Virtual reality research group'), logo: '/semilleros/semvr.png' },
-      { name: 'SICTE', description: l('Semillero de Ciberseguridad', 'Cybersecurity research group'), logo: '/semilleros/sicte.png' },
-    ],
+    // The groups themselves live in the `groups` collection (/admin → Research groups).
   },
   news: {
     eyebrow: l('Actualidad', 'Latest'),

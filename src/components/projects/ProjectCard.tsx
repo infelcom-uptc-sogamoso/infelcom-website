@@ -1,4 +1,5 @@
 import { FC } from 'react';
+import NextLink from 'next/link';
 import {
   Accordion,
   AccordionActions,
@@ -17,7 +18,7 @@ interface Props {
 
 export const ProjectCard: FC<Props> = ({ project }) => {
   const { t, locale } = useT();
-  const { code = 'preview', image, url = '' } = project;
+  const { _id, code = 'preview', image, url = '' } = project;
   const title = inLocale(project, 'title', locale) || t.admin.form.title;
   const description = inLocale(project, 'description', locale) || t.admin.form.summary;
 
@@ -62,11 +63,18 @@ export const ProjectCard: FC<Props> = ({ project }) => {
           {description}
         </Typography>
       </AccordionDetails>
-      {url && (
-        <AccordionActions sx={{ px: { xs: 2, sm: 3 }, pb: 2 }}>
-          <Button href={url} target="_blank" rel="noopener noreferrer" endIcon={<OpenInNew />}>
-            {t.projects.view}
-          </Button>
+      {(url || _id) && (
+        <AccordionActions sx={{ px: { xs: 2, sm: 3 }, pb: 2, flexWrap: 'wrap', gap: 1 }}>
+          {_id && (
+            <Button component={NextLink} href={`/projects/${_id}`} variant="outlined">
+              {t.projects.details}
+            </Button>
+          )}
+          {url && (
+            <Button href={url} target="_blank" rel="noopener noreferrer" endIcon={<OpenInNew />}>
+              {t.projects.view}
+            </Button>
+          )}
         </AccordionActions>
       )}
     </Accordion>

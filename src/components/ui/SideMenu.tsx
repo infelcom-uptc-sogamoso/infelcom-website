@@ -22,6 +22,7 @@ import {
   LoginOutlined,
   LogoutOutlined,
   Mail,
+  Science,
   Tune,
 } from '@mui/icons-material';
 import { AuthContext, UiContext } from '@/contexts';
@@ -81,26 +82,24 @@ export const SideMenu = () => {
             <>
               <Divider sx={{ my: 1 }} />
               <ListSubheader>{t.nav.adminPanel}</ListSubheader>
-              <ListItemButton
-                component={NextLink}
-                href="/admin"
-                onClick={toogleSideMenu}
-                sx={{ minHeight: 52 }}>
-                <ListItemIcon>
-                  <Dashboard />
-                </ListItemIcon>
-                <ListItemText primary={t.nav.adminHome} />
-              </ListItemButton>
-              <ListItemButton
-                component={NextLink}
-                href="/admin/content"
-                onClick={toogleSideMenu}
-                sx={{ minHeight: 52 }}>
-                <ListItemIcon>
-                  <Tune />
-                </ListItemIcon>
-                <ListItemText primary={t.nav.siteContent} />
-              </ListItemButton>
+              {[
+                { href: '/admin', icon: <Dashboard />, label: t.nav.adminHome },
+                { href: '/admin/content', icon: <Tune />, label: t.nav.siteContent },
+                { href: '/admin#researchers', icon: <Groups />, label: t.admin.researchers },
+                { href: '/admin#groups', icon: <Science />, label: t.admin.groups },
+                { href: '/admin#projects', icon: <Assignment />, label: t.admin.projects },
+                { href: '/admin#stories', icon: <Article />, label: t.admin.stories },
+              ].map(({ href, icon, label }) => (
+                <ListItemButton
+                  key={href}
+                  component={NextLink}
+                  href={href}
+                  onClick={toogleSideMenu}
+                  sx={{ minHeight: 52 }}>
+                  <ListItemIcon>{icon}</ListItemIcon>
+                  <ListItemText primary={label} />
+                </ListItemButton>
+              ))}
             </>
           )}
         </List>

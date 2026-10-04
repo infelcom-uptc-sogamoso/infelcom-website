@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { IResearcher } from '@/interfaces';
-import { Researcher } from '@/models';
+import { Group, Researcher } from '@/models';
 import { db } from '@/database';
 import { isValidObjectId } from 'mongoose';
 import { requireAdmin } from '@/utils/requireAdmin';
@@ -103,6 +103,9 @@ const deleteResearcher = async (req: NextApiRequest, res: NextApiResponse<Data>)
       await db.disconnect();
       return res.status(400).json({ message: 'No existe un investigador con este ID' });
     }
+    // Keep groups consistent: drop the person from members and director.
+    await Group.updateMany({ members: id }, { $pull: { members: id } });
+    await Group.updateMany({ director: id }, { director: null });
     await db.disconnect();
     return res.status(200).json({ message: 'Investigador eliminado exitosamente' });
   } catch (error) {

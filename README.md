@@ -61,9 +61,10 @@ m.connect(process.env.MONGO_URL).then(()=>m.connection.db.collection('users').in
 
 | Pantalla                                      | Qué administra                                                                                                                                     |
 | :-------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/admin/content` · **Contenido del sitio**    | Organización (nombre, logo), portada del inicio (frase, botones, video, imagen), Nosotros (cifras), ¿Qué hacemos?, semilleros, títulos de noticias, **contacto** (correo, teléfono, WhatsApp, dirección, ciudad, país, horario, GrupLAC), **redes sociales** y encabezados de las páginas internas. |
+| `/admin/content` · **Contenido del sitio**    | Organización (nombre, logo), portada del inicio (frase, botones, video, imagen), Nosotros (cifras), ¿Qué hacemos?, encabezado de semilleros, títulos de noticias, **contacto** (correo, teléfono, WhatsApp, dirección, ciudad, país, horario, GrupLAC), **redes sociales** y encabezados de las páginas internas. |
 | `/admin` → Investigadores · `/admin/researchers/<id\|new>` | Personas del equipo: nombre, cargo (ES/EN), correo, CvLAC, foto, rol, categoría y visibilidad.                                         |
-| `/admin` → Proyectos · `/admin/projects/<id\|new>`         | Título y resumen (ES/EN), imagen, URL, grupo y categoría.                                                                              |
+| `/admin` → Semilleros · `/admin/groups/<id\|new>`          | Código, nombre, descripción, objetivos, líneas e información adicional (ES/EN), URL amigable, logo, activo/inactivo, **director** e **integrantes** (elegidos entre los investigadores) y **proyectos asociados**. |
+| `/admin` → Proyectos · `/admin/projects/<id\|new>`         | Título y resumen (ES/EN), imagen, URL, semillero (o ninguno) y categoría.                                                              |
 | `/admin` → Noticias · `/admin/stories/<id\|new>`           | Título, resumen y contenido enriquecido (ES/EN), imagen.                                                                               |
 
 En **Contenido del sitio** cada sección es un panel desplegable. Los textos tienen dos campos lado a lado, **ES** y **EN**; los datos neutros (teléfono, URLs, imágenes) tienen uno solo. Las imágenes aceptan una URL (`https://…`), una ruta de `public/` (`/logo.png`) o un archivo de hasta 300 KB. Las listas (cifras, áreas, semilleros, redes) permiten agregar, quitar y reordenar elementos. Al pulsar **Guardar** se valida, se guarda en la base de datos y el cambio se publica de inmediato.
@@ -79,8 +80,9 @@ MongoDB, conexión en `src/database/db.ts` (`MONGO_URL`, timeout de 5 s para fal
 | Colección      | Modelo                       | Contenido                                                                                       |
 | :------------- | :--------------------------- | :---------------------------------------------------------------------------------------------- |
 | `sitecontents` | `src/models/siteContent.ts`  | **Un único documento** `{ key: 'site', data, updatedBy, createdAt, updatedAt }` con todo el contenido editable del sitio. |
+| `groups`       | `src/models/group.ts`        | Un documento por semillero. `director` y `members` son referencias (ObjectId) a `researchers`. Inglés opcional en `en.*`. |
 | `researchers`  | `src/models/researcher.ts`   | Un documento por investigador. Inglés opcional en `en.type`.                                    |
-| `projects`     | `src/models/project.ts`      | Un documento por proyecto. Inglés opcional en `en.title`, `en.description`.                     |
+| `projects`     | `src/models/project.ts`      | Un documento por proyecto. `group` = código del semillero (`''` = sin semillero). Inglés opcional en `en.title`, `en.description`. |
 | `stories`      | `src/models/story.ts`        | Un documento por noticia. Inglés opcional en `en.title`, `en.resume`, `en.content`.             |
 | `users`        | `src/models/user.ts`         | Usuarios del panel (`email`, `password` bcrypt, `role`: `admin` \| `client`).                   |
 
@@ -94,7 +96,7 @@ MongoDB, conexión en `src/database/db.ts` (`MONGO_URL`, timeout de 5 s para fal
 | `hero`            | Portada del inicio                                                |
 | `about`           | Inicio · "¿Por qué nuestro grupo?" (cifras)                       |
 | `areas`           | Inicio · "¿Qué hacemos?"                                          |
-| `groups`          | Inicio · Semilleros                                               |
+| `groups`          | Inicio · encabezado de la sección Semilleros (las tarjetas salen de la colección `groups`) |
 | `news`            | Inicio · encabezado de noticias                                   |
 | `contact`         | Inicio · sección Contacto **y** footer (misma fuente, sin duplicar) |
 | `social`          | Footer (solo se muestran las redes con URL)                       |
@@ -112,6 +114,21 @@ Un texto bilingüe se guarda como `{ "es": "…", "en": "…" }`; un dato neutro
 * **Base caída**: `getSiteContent()` (`src/database/dbContent.ts`) captura el error, lo registra y devuelve `defaultContent`. La página nunca se rompe.
 * **Campo vacío o faltante**: `conform()` lo completa — texto bilingüe vacío → el otro idioma → el valor predeterminado; string vacío → el valor predeterminado. Claves desconocidas se descartan.
 * **Investigadores / proyectos / noticias sin inglés**: la página en inglés muestra el texto en español (`inLocale()` en `src/i18n/locale.ts`).
+
+### Semilleros: relaciones
+
+```text
+Semillero (groups) ──director──▶ Investigador (researchers)
+        │          ──members───▶ Investigadores (researchers)
+        └──code◀── group ── Proyectos (projects)
+```
+
+* **Página pública:** `/groups/<slug>` (`/es/groups/<slug>`), por ejemplo `/es/groups/ciencias-computacionales`. Una sola página dinámica (`src/pages/groups/[slug].tsx`) para todos; los datos vienen de `GET /api/group?slug=…`, que resuelve director, integrantes (solo los visibles) y proyectos. Cada proyecto enlaza a su ficha `/projects/<id>`, que a su vez enlaza al semillero. `/projects` sigue listando todos los proyectos.
+* **Inicio:** las tarjetas de semilleros vienen de `GET /api/groups` (solo los activos) y enlazan a su página. Un semillero inactivo no aparece en el inicio, pero su página sigue accesible con la etiqueta "Inactivo".
+* **Personas sin duplicar:** director e integrantes son referencias a `researchers`; editar a un investigador cambia todas las páginas donde aparece. Al eliminarlo se quita de los semilleros (`$pull` / `director: null`).
+* **Proyectos:** el proyecto guarda el **código** del semillero (`group: 'SCIECOM'`), por eso el código no se puede cambiar después de crear el semillero. En la edición del semillero, "Proyectos asociados" es la lista completa: agregar un proyecto lo mueve a este semillero; quitarlo deja `group: ''` **sin borrar el proyecto**. "Crear proyecto en este semillero" abre `/admin/projects/new?group=<código>` con el semillero preseleccionado. Eliminar un semillero desvincula sus proyectos y no toca a las personas.
+* **Datos iniciales:** si la colección `groups` está vacía, se crean automáticamente SEMTEL, SCIECOM, SEMVR y SICTE (`src/database/dbGroups.ts`); los proyectos existentes quedan vinculados porque ya guardaban esos códigos.
+* **Vista previa:** no hay borradores; "Ver página pública" abre la página del semillero con lo último guardado.
 
 ---
 
@@ -164,7 +181,7 @@ Autenticación              (NextAuth; src/proxy.ts redirige a /auth/login si no
 API/Backend                (src/pages/api/admin/*: requireAdmin() verifica la sesión en el servidor,
                             valida los datos y solo escribe campos permitidos)
    ↓
-Base de datos              (sitecontents / researchers / projects / stories)
+Base de datos              (sitecontents / groups / researchers / projects / stories)
    ↓
 Página pública actualizada (res.revalidate() regenera /, /projects, /researchers, /stories en ES y EN;
                             además ISR cada 60 s)
@@ -186,7 +203,7 @@ src/
 │   ├── landing/    # secciones del inicio (leen useContent())
 │   └── ui/         # Navbar, Footer, Preferences (idioma/tema), ContactChannels
 ├── database/       # db.ts (conexión), dbContent.ts, dbUsers.ts
-├── models/         # esquemas Mongoose
+├── models/         # esquemas Mongoose (group, project, researcher, story, siteContent, user)
 ├── pages/          # páginas públicas, /admin, /api
 ├── themes/         # tema MUI claro/oscuro
 └── utils/          # requireAdmin, roles, pick, formato

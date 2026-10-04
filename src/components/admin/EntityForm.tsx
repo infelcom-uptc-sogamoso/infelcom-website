@@ -1,6 +1,6 @@
 import { ChangeEvent, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
-import useSWR from 'swr';
+import useSWR, { useSWRConfig } from 'swr';
 import {
   Controller,
   DefaultValues,
@@ -32,13 +32,14 @@ import { useNotice } from './useNotice';
  * Load: GET /api/<detail>?_id=…  Save: PUT (existing) or POST (new) /api/admin/<entity>.
  */
 export const useEntityForm = <T extends FieldValues>(
-  entity: 'researchers' | 'projects' | 'stories',
-  detail: 'researcher' | 'project' | 'story',
+  entity: 'researchers' | 'projects' | 'stories' | 'groups',
+  detail: 'researcher' | 'project' | 'story' | 'admin/groups',
   defaults: DefaultValues<T>,
 ) => {
   const router = useRouter();
   const { t } = useT();
   const { notify, notice } = useNotice();
+  const { mutate } = useSWRConfig();
   const id = typeof router.query._id === 'string' ? router.query._id : undefined;
   const isNew = id === 'new';
   const { data, error } = useSWR<T>(id && !isNew ? `/api/${detail}?_id=${id}` : null, {
@@ -48,7 +49,8 @@ export const useEntityForm = <T extends FieldValues>(
   const { reset } = form;
 
   useEffect(() => {
-    if (data) reset({ ...defaults, ...data });
+    // keepDirtyValues: anything typed before the record arrived is not overwritten.
+    if (data) reset({ ...defaults, ...data }, { keepDirtyValues: true });
     // defaults is a literal per page; only re-run when the record arrives
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data, reset]);
@@ -60,6 +62,8 @@ export const useEntityForm = <T extends FieldValues>(
         method: values._id ? 'PUT' : 'POST',
         data: values,
       });
+      // Saves can touch other lists too (a group moves projects): refetch every admin list.
+      await mutate((key) => typeof key === 'string' && key.startsWith('/api/admin/'));
       router.push('/admin?saved=1');
     } catch (err) {
       notify({ severity: 'error', text: apiErrorMessage(err, t) });
@@ -95,7 +99,8 @@ export const ImageUpload = ({ name }: { name: string }) => {
       return;
     }
     const reader = new FileReader();
-    reader.onload = () => setValue(name, reader.result, { shouldDirty: true, shouldValidate: true });
+    reader.onload = () =>
+      setValue(name, reader.result, { shouldDirty: true, shouldValidate: true });
     reader.readAsDataURL(file);
   };
 
@@ -129,9 +134,20 @@ interface TextProps {
   rows?: number;
   helperText?: string;
   type?: string;
+  readOnly?: boolean;
 }
 
-export const FormText = ({ name, label, required, minLength, multiline, rows, helperText, type }: TextProps) => {
+export const FormText = ({
+  name,
+  label,
+  required,
+  minLength,
+  multiline,
+  rows,
+  helperText,
+  type,
+  readOnly,
+}: TextProps) => {
   const { t } = useT();
   const { register, formState } = useFormContext();
   const error = get(formState.errors, name);
@@ -143,9 +159,12 @@ export const FormText = ({ name, label, required, minLength, multiline, rows, he
       multiline={multiline}
       minRows={rows}
       InputLabelProps={{ shrink: true }}
+      inputProps={{ readOnly }}
       {...register(name, {
         required: required ? t.validation.required : false,
-        minLength: minLength ? { value: minLength, message: t.validation.minLength(minLength) } : undefined,
+        minLength: minLength
+          ? { value: minLength, message: t.validation.minLength(minLength) }
+          : undefined,
         validate: (v) => !required || !!String(v ?? '').trim() || t.validation.required,
       })}
       error={!!error}
@@ -154,13 +173,17 @@ export const FormText = ({ name, label, required, minLength, multiline, rows, he
   );
 };
 
-/** Spanish (required, the original field) + optional English (`en.<name>`) side by side. */
+/** Spanish (the original field, required unless `required={false}`) + optional English (`en.<name>`). */
 export const BilingualText = (props: TextProps) => {
   const { t } = useT();
   return (
     <Grid container spacing={2}>
       <Grid item xs={12} md={6}>
-        <FormText {...props} label={`${props.label} · ${t.admin.form.spanish}`} required />
+        <FormText
+          {...props}
+          label={`${props.label} · ${t.admin.form.spanish}`}
+          required={props.required ?? true}
+        />
       </Grid>
       <Grid item xs={12} md={6}>
         <FormText

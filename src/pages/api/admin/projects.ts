@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { IProject } from '@/interfaces';
-import { Project } from '@/models';
+import { Group, Project } from '@/models';
 import { db } from '@/database';
 import { isValidObjectId } from 'mongoose';
 import { requireAdmin } from '@/utils/requireAdmin';
@@ -10,6 +10,10 @@ import { pick } from '@/utils';
 const FIELDS = ['title', 'description', 'image', 'url', 'category', 'group', 'en'];
 
 type Data = { message: string } | IProject[] | IProject;
+
+/** A project may only point to an existing group (or to none). */
+const hasValidGroup = async (body: Record<string, unknown>) =>
+  !body?.group || !!(await Group.exists({ code: String(body.group) }));
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
   if (!(await requireAdmin(req, res))) return;
@@ -45,6 +49,10 @@ const updateProjects = async (req: NextApiRequest, res: NextApiResponse<Data>) =
   }
   try {
     await db.connect();
+    if (!(await hasValidGroup(req.body))) {
+      await db.disconnect();
+      return res.status(400).json({ message: 'El semillero no existe' });
+    }
     const project = await Project.findById(_id);
     if (!project) {
       await db.disconnect();
@@ -67,6 +75,10 @@ const createProject = async (req: NextApiRequest, res: NextApiResponse<Data>) =>
     if (projectInDB) {
       await db.disconnect();
       return res.status(400).json({ message: 'Ya existe un proyecto con ese id' });
+    }
+    if (!(await hasValidGroup(req.body))) {
+      await db.disconnect();
+      return res.status(400).json({ message: 'El semillero no existe' });
     }
     const project = new Project({ code: crypto.randomUUID(), ...pick(req.body, FIELDS) });
     await project.save();

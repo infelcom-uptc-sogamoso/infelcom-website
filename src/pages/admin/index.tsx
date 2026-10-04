@@ -18,14 +18,14 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import { enUS, esES } from '@mui/x-data-grid/locales';
-import { IProject, IResearcher, IStory } from '@/interfaces';
+import { IGroup, IProject, IResearcher, IStory } from '@/interfaces';
 import { AdminLayout } from '@/components/layouts';
 import { useNotice } from '@/components/admin/useNotice';
 import { apiErrorMessage, infelcomApi } from '@/infelcomApis';
 import { useT } from '@/i18n/useT';
 import { formatDate } from '@/utils';
 
-type Entity = 'researchers' | 'projects' | 'stories';
+type Entity = 'researchers' | 'groups' | 'projects' | 'stories';
 
 const swrOptions = { revalidateOnFocus: false, revalidateOnReconnect: false };
 
@@ -36,7 +36,8 @@ const AdminPage = () => {
   const researchers = useSWR<IResearcher[]>('/api/admin/researchers', swrOptions);
   const projects = useSWR<IProject[]>('/api/admin/projects', swrOptions);
   const stories = useSWR<IStory[]>('/api/admin/stories', swrOptions);
-  const lists = { researchers, projects, stories };
+  const groups = useSWR<IGroup[]>('/api/admin/groups', swrOptions);
+  const lists = { researchers, groups, projects, stories };
   const localeText = (locale === 'es' ? esES : enUS).components.MuiDataGrid.defaultProps.localeText;
 
   // Edit pages redirect here with ?saved=1 after a successful save.
@@ -75,7 +76,10 @@ const AdminPage = () => {
           </IconButton>
         </Tooltip>
         <Tooltip title={t.common.delete}>
-          <IconButton aria-label={t.common.delete} color="error" onClick={() => remove(entity, row._id)}>
+          <IconButton
+            aria-label={t.common.delete}
+            color="error"
+            onClick={() => remove(entity, row._id)}>
             <DeleteIcon />
           </IconButton>
         </Tooltip>
@@ -102,6 +106,23 @@ const AdminPage = () => {
         { field: 'email', headerName: t.admin.columns.email, minWidth: 220, flex: 1 },
         { field: 'type', headerName: t.admin.columns.description, minWidth: 220, flex: 1 },
         actions('researchers'),
+      ],
+    },
+    {
+      entity: 'groups',
+      title: t.admin.groups,
+      newLabel: t.admin.newGroup,
+      columns: [
+        { field: 'code', headerName: t.admin.columns.code, minWidth: 120 },
+        { field: 'name', headerName: t.admin.form.groupName, minWidth: 260, flex: 2 },
+        {
+          field: 'isActive',
+          headerName: t.admin.columns.status,
+          minWidth: 120,
+          renderCell: ({ row }: GridRenderCellParams) =>
+            row.isActive ? t.groups.active : t.groups.inactive,
+        },
+        actions('groups'),
       ],
     },
     {
@@ -132,7 +153,10 @@ const AdminPage = () => {
     <AdminLayout title={t.admin.title} subTitle={t.admin.subtitle} icon={<CategoryOutlined />}>
       <Card sx={{ mt: 2, mb: 4 }}>
         <CardContent>
-          <Typography variant="h3" component="h2" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Typography
+            variant="h3"
+            component="h2"
+            sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Tune /> {t.nav.siteContent}
           </Typography>
           <Typography sx={{ color: 'text.secondary', mt: 1 }}>{t.admin.contentCard}</Typography>
@@ -147,12 +171,25 @@ const AdminPage = () => {
       {sections.map(({ entity, title, newLabel, columns }) => {
         const { data, error, isLoading } = lists[entity];
         return (
-          <Box key={entity} component="section" sx={{ mb: 5 }}>
-            <Box display="flex" flexWrap="wrap" gap={1} justifyContent="space-between" alignItems="center" mb={2}>
+          <Box
+            key={entity}
+            id={entity}
+            component="section"
+            sx={{ mb: 5, scrollMarginTop: 'calc(var(--header-h) + 16px)' }}>
+            <Box
+              display="flex"
+              flexWrap="wrap"
+              gap={1}
+              justifyContent="space-between"
+              alignItems="center"
+              mb={2}>
               <Typography variant="subtitle2" component="h2">
                 {title} {data && `(${data.length})`}
               </Typography>
-              <Button startIcon={<AddOutlined />} component={NextLink} href={`/admin/${entity}/new`}>
+              <Button
+                startIcon={<AddOutlined />}
+                component={NextLink}
+                href={`/admin/${entity}/new`}>
                 {newLabel}
               </Button>
             </Box>
