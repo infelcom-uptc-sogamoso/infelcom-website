@@ -8,26 +8,26 @@ import {
   Typography,
 } from '@mui/material';
 import { ExpandMore, OpenInNew } from '@mui/icons-material';
+import { useT } from '@/i18n/useT';
+import { inLocale } from '@/i18n/locale';
 
 interface Props {
   project: any;
 }
 
 export const ProjectCard: FC<Props> = ({ project }) => {
-  const {
-    code = 'preview',
-    title = 'Título del proyecto',
-    description = 'Descripción del proyecto',
-    image,
-    url = '',
-  } = project;
+  const { t, locale } = useT();
+  const { code = 'preview', image, url = '' } = project;
+  const title = inLocale(project, 'title', locale) || t.admin.form.title;
+  const description = inLocale(project, 'description', locale) || t.admin.form.summary;
 
   return (
     <Accordion
       disableGutters
       sx={{
         width: '100%',
-        border: '1px solid #e3e8e8',
+        border: '1px solid',
+        borderColor: 'divider',
         borderRadius: '16px !important',
         '&::before': { display: 'none' },
         '&.Mui-expanded': { borderColor: 'primary.light', boxShadow: 'var(--shadow)' },
@@ -65,7 +65,7 @@ export const ProjectCard: FC<Props> = ({ project }) => {
       {url && (
         <AccordionActions sx={{ px: { xs: 2, sm: 3 }, pb: 2 }}>
           <Button href={url} target="_blank" rel="noopener noreferrer" endIcon={<OpenInNew />}>
-            Ver proyecto
+            {t.projects.view}
           </Button>
         </AccordionActions>
       )}

@@ -16,7 +16,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse<Data>)
 
 const getStories = async (req: NextApiRequest, res: NextApiResponse<Data>) => {
   await db.connect();
-  const stories = await Story.find().lean();
+  const stories = await Story.find().sort({ createdAt: -1 }).lean();
   await db.disconnect();
 
   const updatedStories = stories.map((story) => {

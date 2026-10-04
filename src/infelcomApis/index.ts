@@ -1,1 +1,1 @@
-export { default as infelcomApi } from './infelcomApi';
+export { default as infelcomApi, apiErrorMessage } from './infelcomApi';

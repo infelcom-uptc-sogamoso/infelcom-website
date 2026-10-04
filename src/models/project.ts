@@ -30,6 +30,8 @@ const projectSchema = new Schema(
         required: true,
       },
     },
+    // Optional English versions; empty → the Spanish field above is shown.
+    en: { title: { type: String }, description: { type: String } },
   },
   {
     timestamps: true,

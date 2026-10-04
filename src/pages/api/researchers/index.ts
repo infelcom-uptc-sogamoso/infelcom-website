@@ -17,14 +17,15 @@ export default function handler(req: NextApiRequest, res: NextApiResponse<Data>)
 const getResearchers = async (req: NextApiRequest, res: NextApiResponse<Data>) => {
   const { category = 'all', role = 'all' } = req.query;
 
-  let condition = {};
+  // Hidden researchers ("Ocultar en la página pública") never leave the server.
+  const condition: Record<string, unknown> = { isShowed: true };
 
   if (category !== 'all' && CATEGORY_CONSTANTS.validCategories.includes(`${category}`)) {
-    condition = { category };
+    condition.category = category;
   }
 
   if (role !== 'all' && ROLE_CONSTANTS.validCategories.includes(`${role}`)) {
-    condition = { role };
+    condition.role = role;
   }
 
   await db.connect();

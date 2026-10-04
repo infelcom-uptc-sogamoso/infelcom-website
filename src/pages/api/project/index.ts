@@ -25,7 +25,7 @@ const getProjectById = async (req: NextApiRequest, res: NextApiResponse<Data>) =
     const project = await Project.findById(_id).lean();
     await db.disconnect();
     if (!project) {
-      return null;
+      return res.status(404).json({ message: 'Not found' });
     }
     res.status(200).json(project);
   } catch (error) {

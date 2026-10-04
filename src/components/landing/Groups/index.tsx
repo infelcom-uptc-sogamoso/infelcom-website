@@ -1,25 +1,22 @@
-import Image from 'next/image';
-import { IGroup } from '@/interfaces';
 import { SectionHeading } from '@/components/ui/SectionHeading';
+import { useContent } from '@/content/ContentContext';
+import { useT } from '@/i18n/useT';
 import styles from './Groups.module.css';
 
-const groupsData: IGroup[] = [
-  { title: 'SEMTEL', description: 'Semillero de Telecomunicaciones', image: '/semilleros/semtel.png' },
-  { title: 'SCIECOM', description: 'Semillero de Ciencias computacionales', image: '/semilleros/sciecom.png' },
-  { title: 'SEMVR', description: 'Semillero de Realidad Virtual', image: '/semilleros/semvr.png' },
-  { title: 'SICTE', description: 'Semillero de Ciberseguridad', image: '/semilleros/sicte.png' },
-];
-
 export const Groups = () => {
+  const { groups } = useContent();
+  const { t } = useT();
+
   return (
     <section id="groups" className={`section ${styles.section}`} aria-labelledby="groups-title">
       <div className="container">
-        <SectionHeading id="groups-title" eyebrow="Semilleros" title="Nuestros grupos de investigación" dark />
+        <SectionHeading id="groups-title" eyebrow={groups.eyebrow} title={groups.title} dark />
         <ul className={styles.grid}>
-          {groupsData.map(({ title, description, image }) => (
-            <li key={title} className={styles.card}>
-              <Image src={image} alt={`Logo de ${title}`} width={180} height={180} sizes="180px" />
-              <h3>{title}</h3>
+          {groups.items.map(({ name, description, logo }, i) => (
+            <li key={i} className={styles.card}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={logo} alt={t.groups.logoAlt(name)} width={180} height={180} loading="lazy" />
+              <h3>{name}</h3>
               <p>{description}</p>
             </li>
           ))}

@@ -3,10 +3,16 @@ import { IStory } from '@/interfaces';
 import { Story } from '@/models';
 import { db } from '@/database';
 import { isValidObjectId } from 'mongoose';
+import { requireAdmin } from '@/utils/requireAdmin';
+import { pick } from '@/utils';
+
+/** The only fields an admin request may write (code, _id and timestamps are server-owned). */
+const FIELDS = ['title', 'resume', 'content', 'imageUrl', 'en'];
 
 type Data = { message: string } | IStory[] | IStory;
 
-export default function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
+  if (!(await requireAdmin(req, res))) return;
   switch (req.method) {
     case 'GET':
       return getStories(req, res);
@@ -44,7 +50,7 @@ const updateStories = async (req: NextApiRequest, res: NextApiResponse<Data>) =>
       await db.disconnect();
       return res.status(400).json({ message: 'No existe una noticia con este ID' });
     }
-    await story.updateOne(req.body);
+    await story.updateOne(pick(req.body, FIELDS), { runValidators: true });
     await db.disconnect();
     return res.status(200).json({ message: 'Noticia actualizada exitosamente' });
   } catch (error) {
@@ -62,14 +68,7 @@ const createStory = async (req: NextApiRequest, res: NextApiResponse<Data>) => {
       await db.disconnect();
       return res.status(400).json({ message: 'Ya existe una noticia con ese id' });
     }
-    const { title, resume, content, imageUrl } = req.body;
-    const story = new Story({
-      code: crypto.randomUUID(),
-      title,
-      resume,
-      content,
-      imageUrl,
-    });
+    const story = new Story({ code: crypto.randomUUID(), ...pick(req.body, FIELDS) });
     await story.save();
     await db.disconnect();
     return res.status(201).json({ message: 'Noticia creada exitosamente' });

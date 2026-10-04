@@ -1,4 +1,5 @@
-import { FC, useEffect, useState } from 'react';
+import { FC, ReactNode, useState } from 'react';
+import type { Editor } from '@tiptap/react';
 import {
   FormatAlignCenter,
   FormatAlignJustify,
@@ -11,53 +12,63 @@ import {
   Redo,
   Undo,
 } from '@mui/icons-material';
-import { Divider, IconButton, MenuItem, Paper } from '@mui/material';
+import { Divider, IconButton, MenuItem, Paper, Tooltip } from '@mui/material';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
+import { useT } from '@/i18n/useT';
 import { ColorPicker } from './ColorPicker';
 
 interface Props {
-  editor: any;
+  editor: Editor;
 }
 
 export const FormattingOptions: FC<Props> = ({ editor }) => {
+  const { t } = useT();
   const [fontSelected, setFontSelected] = useState('3');
   const [color, setColor] = useState('#222222');
   const options = [
-    { label: 'Subtítulo', value: 2 },
-    { label: 'Párrafo', value: 3 },
-    { label: 'Cita', value: 4 },
+    { label: t.admin.editor.subtitle, value: 2 },
+    { label: t.admin.editor.paragraph, value: 3 },
+    { label: t.admin.editor.quote, value: 4 },
   ];
 
-  useEffect(() => {
-    if (color) {
-      editor.chain().focus().setColor(color).run();
-    }
-    // eslint-disable-next-line
-  }, [color]);
-
   const handleFontOptions = (event: SelectChangeEvent) => {
-    setFontSelected(event.target.value as string);
-    editor.chain().focus().toggleHeading({ level: event.target.value }).run();
+    setFontSelected(event.target.value);
+    const level = Number(event.target.value) as 2 | 3 | 4;
+    editor.chain().focus().toggleHeading({ level }).run();
   };
+
+  // Color is only applied when the admin picks one: a default color baked into every story
+  // would make the text unreadable in dark mode.
+  const changeColor = (value: string) => {
+    setColor(value);
+    editor.chain().focus().setColor(value).run();
+  };
+
+  const button = (label: string, icon: ReactNode, run: () => void) => (
+    <Tooltip title={label}>
+      <IconButton className={'menu-icon'} aria-label={label} onClick={run}>
+        {icon}
+      </IconButton>
+    </Tooltip>
+  );
+  const chain = () => editor.chain().focus();
 
   return (
     <Paper
       elevation={0}
-      sx={(theme) => ({
+      sx={{
         padding: '8px',
         gap: '8px',
         display: 'flex',
-        flexDirection: 'row',
-        borderBottom: `1px solid ${theme.palette.divider}`,
-      })}>
-      <IconButton className={'menu-icon'} onClick={() => editor.chain().focus().undo().run()}>
-        <Undo />
-      </IconButton>
-      <IconButton className={'menu-icon'} onClick={() => editor.chain().focus().redo().run()}>
-        <Redo />
-      </IconButton>
+        flexWrap: 'wrap',
+        alignItems: 'center',
+        borderBottom: 1,
+        borderColor: 'divider',
+      }}>
+      {button(t.admin.editor.undo, <Undo />, () => chain().undo().run())}
+      {button(t.admin.editor.redo, <Redo />, () => chain().redo().run())}
       <Divider orientation="vertical" flexItem />
-      <Select className={'font-select'} onChange={handleFontOptions} value={fontSelected}>
+      <Select className={'font-select'} onChange={handleFontOptions} value={fontSelected} size="small">
         {options.map((item) => (
           <MenuItem key={item.value} value={item.value}>
             {item.label}
@@ -65,50 +76,22 @@ export const FormattingOptions: FC<Props> = ({ editor }) => {
         ))}
       </Select>
       <Divider orientation="vertical" flexItem />
-      <IconButton
-        className={'menu-icon'}
-        onClick={() => editor?.chain().focus().toggleBold().run()}>
-        <FormatBold />
-      </IconButton>
-      <IconButton
-        className={'menu-icon'}
-        onClick={() => editor?.chain().focus().toggleItalic().run()}>
-        <FormatItalic />
-      </IconButton>
+      {button(t.admin.editor.bold, <FormatBold />, () => chain().toggleBold().run())}
+      {button(t.admin.editor.italic, <FormatItalic />, () => chain().toggleItalic().run())}
       <Divider orientation="vertical" flexItem />
-      <IconButton
-        className={'menu-icon'}
-        onClick={() => editor.chain().focus().setTextAlign('left').run()}>
-        <FormatAlignLeft />
-      </IconButton>
-      <IconButton
-        className={'menu-icon'}
-        onClick={() => editor.chain().focus().setTextAlign('center').run()}>
-        <FormatAlignCenter />
-      </IconButton>
-      <IconButton
-        className={'menu-icon'}
-        onClick={() => editor.chain().focus().setTextAlign('right').run()}>
-        <FormatAlignRight />
-      </IconButton>
-      <IconButton
-        className={'menu-icon'}
-        onClick={() => editor.chain().focus().setTextAlign('justify').run()}>
-        <FormatAlignJustify />
-      </IconButton>
+      {button(t.admin.editor.alignLeft, <FormatAlignLeft />, () => chain().setTextAlign('left').run())}
+      {button(t.admin.editor.alignCenter, <FormatAlignCenter />, () => chain().setTextAlign('center').run())}
+      {button(t.admin.editor.alignRight, <FormatAlignRight />, () => chain().setTextAlign('right').run())}
+      {button(t.admin.editor.justify, <FormatAlignJustify />, () => chain().setTextAlign('justify').run())}
       <Divider orientation="vertical" flexItem />
-      <ColorPicker color={color} onChange={setColor} />
+      <Tooltip title={t.admin.editor.color}>
+        <span>
+          <ColorPicker color={color} onChange={changeColor} />
+        </span>
+      </Tooltip>
       <Divider orientation="vertical" flexItem />
-      <IconButton
-        className={'menu-icon'}
-        onClick={() => editor.chain().focus().toggleBulletList().run()}>
-        <FormatListBulleted />
-      </IconButton>
-      <IconButton
-        className={'menu-icon'}
-        onClick={() => editor.chain().focus().toggleOrderedList().run()}>
-        <FormatListNumbered />
-      </IconButton>
+      {button(t.admin.editor.bulletList, <FormatListBulleted />, () => chain().toggleBulletList().run())}
+      {button(t.admin.editor.orderedList, <FormatListNumbered />, () => chain().toggleOrderedList().run())}
     </Paper>
   );
 };

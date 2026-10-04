@@ -1,32 +1,22 @@
 import mongoose from 'mongoose';
-/**
- * 0 = disconnected
- * 1 = connected
- * 2 = connecting
- * 3 = disconnecting
- */
-const mongoConnection = {
-  isConnected: 0,
-};
 
+let connecting: Promise<typeof mongoose> | null = null;
+
+/** Opens the shared connection once; concurrent callers await the same attempt. */
 export const connect = async () => {
-  if (mongoConnection.isConnected) {
-    return;
-  }
-  if (mongoose.connections.length > 0) {
-    mongoConnection.isConnected = mongoose.connections[0].readyState;
-    if (mongoConnection.isConnected === 1) {
-      return;
-    }
-    await mongoose.disconnect();
-  }
-  await mongoose.connect(process.env.MONGO_URL || '');
-  mongoConnection.isConnected = 1;
+  if (mongoose.connection.readyState === 1) return;
+  // Fail fast so a down database degrades to default content instead of hanging requests.
+  connecting ??= mongoose
+    .connect(process.env.MONGO_URL || '', { serverSelectionTimeoutMS: 5000 })
+    .catch((error) => {
+      connecting = null; // allow a retry on the next request
+      throw error;
+    });
+  await connecting;
 };
 
-export const disconnect = async () => {
-  if (process.env.NODE_ENV === 'development') return;
-  if (mongoConnection.isConnected === 0) return;
-  await mongoose.disconnect();
-  mongoConnection.isConnected = 0;
-};
+/**
+ * Intentionally a no-op: the connection is shared by concurrent requests, and closing it after
+ * each query made parallel requests fail with MongoNotConnectedError. Mongoose keeps a pool.
+ */
+export const disconnect = async () => {};

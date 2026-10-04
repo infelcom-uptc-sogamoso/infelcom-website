@@ -1,29 +1,24 @@
-import { FC, useEffect } from 'react';
+import { FC, useState } from 'react';
 import { StarterKit } from '@tiptap/starter-kit';
 import { Heading } from '@tiptap/extension-heading';
 import { TextStyle } from '@tiptap/extension-text-style';
 import { TextAlign } from '@tiptap/extension-text-align';
-import { Box } from '@mui/material';
+import { Box, FormLabel } from '@mui/material';
 import { Color } from '@tiptap/extension-color';
 import { EditorContent, useEditor } from '@tiptap/react';
 import { FormattingOptions } from './FormattingOptions';
-import { UseFormSetValue, UseFormWatch } from 'react-hook-form';
 
-type FormData = {
-  content: string;
-  code: string;
-  title: string;
-  resume: string;
-  imageUrl: string;
-};
+const MAX_CHARS = 1500;
 
 interface Props {
-  setCharCount: (charCount: number) => void;
-  setValue: UseFormSetValue<FormData>;
-  watch: UseFormWatch<FormData>;
+  label: string;
+  /** Initial HTML; remount the editor (via `key`) to load different content. */
+  value: string;
+  onChange: (html: string) => void;
 }
 
-const TextEditor: FC<Props> = ({ setCharCount, setValue, watch }) => {
+const TextEditor: FC<Props> = ({ label, value, onChange }) => {
+  const [charCount, setCharCount] = useState(0);
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -36,39 +31,36 @@ const TextEditor: FC<Props> = ({ setCharCount, setValue, watch }) => {
         levels: [2, 3, 4],
       }),
     ],
-    content: watch('content'),
+    content: value,
     immediatelyRender: false,
+    onCreate: ({ editor }) => setCharCount(editor.getText().length),
     onUpdate: ({ editor }) => {
       const text = editor.getText();
-      if (text.length <= 1500) {
+      if (text.length <= MAX_CHARS) {
         setCharCount(text.length);
-        setValue('content', editor.getHTML());
+        onChange(editor.getHTML());
       } else {
         editor.commands.undo();
       }
     },
   });
 
-  useEffect(() => {
-    if (editor) {
-      editor.commands.setContent(watch('content') || '');
-    }
-    // eslint-disable-next-line
-  }, [editor]);
-
   if (!editor) {
     return null;
   }
 
   return (
-    <Box
-      sx={(theme) => ({
-        borderRadius: '4px',
-        border: `1px solid ${theme.palette.divider}`,
-      })}>
-      <FormattingOptions editor={editor} />
-      <div className="editor-box">
-        <EditorContent editor={editor} />
+    <Box>
+      <FormLabel sx={{ display: 'block', mb: 1 }}>{label}</FormLabel>
+      <Box
+        sx={{ borderRadius: '4px', border: 1, borderColor: 'divider' }}>
+        <FormattingOptions editor={editor} />
+        <div className="editor-box">
+          <EditorContent editor={editor} />
+        </div>
+      </Box>
+      <div className={`counter ${charCount === MAX_CHARS ? 'error' : ''}`}>
+        {charCount} / {MAX_CHARS}
       </div>
     </Box>
   );

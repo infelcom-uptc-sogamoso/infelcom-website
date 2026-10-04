@@ -11,7 +11,7 @@
 .bar {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 8px;
   height: var(--header-h);
 }
 
@@ -65,7 +65,8 @@
   color: var(--teal-bright);
 }
 
-.menuBtn {
+.menuBtn,
+.prefBtn {
   display: grid;
   place-items: center;
   width: 44px;
@@ -78,14 +79,28 @@
   transition: background-color 0.2s;
 }
 
-.menuBtn:hover {
+.prefCode {
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.menuBtn:hover,
+.prefBtn:hover {
   background: rgba(255, 255, 255, 0.1);
 }
 
 .link:focus-visible,
 .menuBtn:focus-visible,
+.prefBtn:focus-visible,
 .brand:focus-visible {
   outline-color: var(--teal-bright);
+}
+
+@media (min-width: 600px) {
+  .bar {
+    gap: 12px;
+  }
 }
 
 @media (min-width: 900px) {

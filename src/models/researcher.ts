@@ -33,6 +33,8 @@ const researcherSchema = new Schema(
         required: true,
       },
     },
+    // Optional English versions; empty → the Spanish field above is shown.
+    en: { type: { type: String } },
   },
   {
     timestamps: true,

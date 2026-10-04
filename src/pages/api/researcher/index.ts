@@ -25,7 +25,7 @@ const getResearcherById = async (req: NextApiRequest, res: NextApiResponse<Data>
     const researcher = await Researcher.findById(_id).lean();
     await db.disconnect();
     if (!researcher) {
-      return null;
+      return res.status(404).json({ message: 'Not found' });
     }
     res.status(200).json(researcher);
   } catch (error) {
