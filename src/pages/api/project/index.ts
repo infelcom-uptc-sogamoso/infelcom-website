@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { db } from '@/database';
 import { IProject } from '@/interfaces';
-import { Project } from '@/models';
+import { Group, Project } from '@/models';
 import { isValidObjectId } from 'mongoose';
 
 type Data = { message: string } | IProject[] | IProject;
@@ -23,11 +23,13 @@ const getProjectById = async (req: NextApiRequest, res: NextApiResponse<Data>) =
   try {
     await db.connect();
     const project = await Project.findById(_id).lean();
-    await db.disconnect();
     if (!project) {
-      return null;
+      return res.status(404).json({ message: 'Not found' });
     }
-    res.status(200).json(project);
+    const groupInfo = project.group
+      ? await Group.findOne({ code: project.group }).select('code slug name en.name').lean()
+      : null;
+    res.status(200).json({ ...project, groupInfo });
   } catch (error) {
     console.error(error);
     await db.disconnect();

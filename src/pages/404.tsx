@@ -4,10 +4,13 @@ import { Button, Typography } from '@mui/material';
 import { Home } from '@mui/icons-material';
 import { LandingLayout } from '@/components/layouts';
 import NotFoundIcon from '../assets/notFound.svg';
+import { getContentProps } from '@/content/getContentProps';
+import { useT } from '@/i18n/useT';
 
 const NotFound = () => {
+  const { t } = useT();
   return (
-    <LandingLayout title="Página no encontrada" pageDescription="Página no encontrada">
+    <LandingLayout title={t.notFound.pageTitle} pageDescription={t.notFound.pageTitle}>
       <div
         className="section container"
         style={{
@@ -19,14 +22,13 @@ const NotFound = () => {
         }}>
         <div style={{ flex: '1 1 320px', maxWidth: 520 }}>
           <Typography variant="h1" sx={{ fontWeight: 300 }}>
-            No encontramos ninguna página aquí
+            {t.notFound.title}
           </Typography>
           <Typography sx={{ mt: 2, mb: 3, color: 'text.secondary', fontSize: '1.1rem' }}>
-            Es posible que la página que buscabas se haya eliminado o no esté disponible en el
-            momento.
+            {t.notFound.text}
           </Typography>
           <Button component={NextLink} href="/" size="large" startIcon={<Home />}>
-            Volver al inicio
+            {t.notFound.home}
           </Button>
         </div>
         <Image
@@ -39,5 +41,7 @@ const NotFound = () => {
     </LandingLayout>
   );
 };
+
+export const getStaticProps = getContentProps;
 
 export default NotFound;

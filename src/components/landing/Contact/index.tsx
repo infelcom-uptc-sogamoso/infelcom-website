@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Alert, Button, TextField } from '@mui/material';
-import { Mail, Phone, Place, Send } from '@mui/icons-material';
+import { Send } from '@mui/icons-material';
 import { infelcomApi } from '@/infelcomApis';
-import { CONTACT } from '@/utils/site';
+import { useContent } from '@/content/ContentContext';
+import { useT } from '@/i18n/useT';
+import { ContactChannels } from '@/components/ui/ContactChannels';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 import styles from './Contact.module.css';
 
@@ -16,12 +18,13 @@ interface FormData {
   message: string;
 }
 
-const required = {
-  required: 'Este campo es requerido',
-  minLength: { value: 2, message: 'Mínimo 2 caracteres' },
-};
-
 export const Contact = () => {
+  const { contact } = useContent();
+  const { t } = useT();
+  const required = {
+    required: t.validation.required,
+    minLength: { value: 2, message: t.validation.minLength(2) },
+  };
   const [status, setStatus] = useState<'success' | 'error' | null>(null);
   const {
     register,
@@ -55,80 +58,64 @@ export const Contact = () => {
         <div className={styles.info}>
           <SectionHeading
             id="contact-title"
-            eyebrow="Contacto"
-            title="Contáctanos"
+            eyebrow={contact.eyebrow}
+            title={contact.title}
             dark
             align="left"
           />
-          <p>
-            ¿Te gustaría colaborar con nuestro semillero de investigación? Únete a nuestro equipo,
-            desarrolla proyectos innovadores y comparte conocimientos.
-          </p>
-          {CONTACT.gruplacUrl && (
+          <p>{contact.intro}</p>
+          {contact.gruplacUrl && (
             <p>
-              Si deseas conocer más sobre nuestro trabajo, te invitamos a visitar nuestro{' '}
-              <a href={CONTACT.gruplacUrl} target="_blank" rel="noopener noreferrer">
+              {t.contact.gruplac}{' '}
+              <a href={contact.gruplacUrl} target="_blank" rel="noopener noreferrer">
                 GrupLAC
               </a>
               .
             </p>
           )}
           <ul className={styles.channels}>
-            <li>
-              <Place aria-hidden />
-              <span>{CONTACT.address}</span>
-            </li>
-            <li>
-              <Mail aria-hidden />
-              <a href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a>
-            </li>
-            <li>
-              <Phone aria-hidden />
-              <a href={`tel:${CONTACT.phone.replace(/\s/g, '')}`}>{CONTACT.phone}</a>
-            </li>
+            <ContactChannels />
           </ul>
         </div>
 
         <form className={styles.form} onSubmit={handleSubmit(sendEmail)} noValidate>
           <div className={styles.row}>
-            <TextField label="Nombre(s)" autoComplete="given-name" {...field('name')} />
-            <TextField label="Apellido(s)" autoComplete="family-name" {...field('lastName')} />
+            <TextField label={t.contact.name} autoComplete="given-name" {...field('name')} />
+            <TextField label={t.contact.lastName} autoComplete="family-name" {...field('lastName')} />
           </div>
           <div className={styles.row}>
             <TextField
-              label="Teléfono"
+              label={t.contact.phone}
               type="tel"
               inputMode="tel"
               autoComplete="tel"
               {...field('phone', {
                 ...required,
-                pattern: { value: /^[+\d\s()-]{7,}$/, message: 'Teléfono no válido' },
+                pattern: { value: /^[+\d\s()-]{7,}$/, message: t.validation.phone },
               })}
             />
             <TextField
-              label="Correo electrónico"
+              label={t.contact.email}
               type="email"
               autoComplete="email"
               {...field('fromEmail', {
                 ...required,
-                pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Correo no válido' },
+                pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: t.validation.email },
               })}
             />
           </div>
           <TextField
-            label="Institución o escuela"
+            label={t.contact.institution}
             autoComplete="organization"
             {...field('institution')}
           />
-          <TextField label="Escribe aquí tu mensaje" multiline minRows={4} {...field('message')} />
+          <TextField label={t.contact.message} multiline minRows={4} {...field('message')} />
           <div role="status" aria-live="polite">
             {status === 'success' && (
-              <Alert severity="success">Se ha enviado tu solicitud de contacto.</Alert>
+              <Alert severity="success">{t.contact.success}</Alert>
             )}
             {status === 'error' && (
-              <Alert severity="error">
-                No pudimos enviar tu mensaje. Inténtalo de nuevo o escríbenos a {CONTACT.email}.
-              </Alert>
+              <Alert severity="error">{t.contact.error(contact.email)}</Alert>
             )}
           </div>
           <Button
@@ -137,7 +124,7 @@ export const Contact = () => {
             endIcon={<Send />}
             disabled={isSubmitting}
             className={styles.submit}>
-            {isSubmitting ? 'Enviando…' : 'Enviar'}
+            {isSubmitting ? t.contact.sending : t.contact.send}
           </Button>
         </form>
       </div>

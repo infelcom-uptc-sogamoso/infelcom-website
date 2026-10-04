@@ -2,6 +2,8 @@ import { FC } from 'react';
 import NextLink from 'next/link';
 import { IStory } from '@/interfaces';
 import { formatDate } from '@/utils';
+import { useT } from '@/i18n/useT';
+import { inLocale } from '@/i18n/locale';
 import styles from './Stories.module.css';
 
 interface Props {
@@ -10,7 +12,10 @@ interface Props {
 }
 
 export const StoriesCard: FC<Props> = ({ story, compact }) => {
-  const { _id, title, resume, imageUrl, createdAt } = story;
+  const { locale } = useT();
+  const { _id, imageUrl, createdAt } = story;
+  const title = inLocale(story, 'title', locale);
+  const resume = inLocale(story, 'resume', locale);
   const [creationDate] = formatDate(createdAt).split(' ');
 
   return (

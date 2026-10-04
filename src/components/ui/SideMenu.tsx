@@ -22,9 +22,13 @@ import {
   LoginOutlined,
   LogoutOutlined,
   Mail,
+  Science,
+  Tune,
 } from '@mui/icons-material';
 import { AuthContext, UiContext } from '@/contexts';
+import { useT } from '@/i18n/useT';
 import { NAV_LINKS } from '@/utils/site';
+import { isAdminRole } from '@/utils/roles';
 
 const icons: Record<string, ReactNode> = {
   '/': <Home />,
@@ -38,6 +42,7 @@ export const SideMenu = () => {
   const { isMenuOpen, toogleSideMenu } = useContext(UiContext);
   const { isLoggedIn, user, logout } = useContext(AuthContext);
   const { asPath, pathname } = useRouter();
+  const { t } = useT();
 
   return (
     <Drawer
@@ -48,20 +53,20 @@ export const SideMenu = () => {
       <Box
         id="side-menu"
         component="nav"
-        aria-label="Menú"
+        aria-label={t.nav.menu}
         display="flex"
         flexDirection="column"
         height="100%">
         <Box display="flex" justifyContent="flex-end" p={1}>
           <IconButton
             onClick={toogleSideMenu}
-            aria-label="Cerrar menú"
+            aria-label={t.nav.closeMenu}
             sx={{ width: 44, height: 44 }}>
             <Close />
           </IconButton>
         </Box>
         <List>
-          {NAV_LINKS.map(({ href, label }) => (
+          {NAV_LINKS.map(({ href, key }) => (
             <ListItemButton
               key={href}
               component={NextLink}
@@ -70,23 +75,31 @@ export const SideMenu = () => {
               selected={pathname === href}
               sx={{ minHeight: 52 }}>
               <ListItemIcon>{icons[href]}</ListItemIcon>
-              <ListItemText primary={label} />
+              <ListItemText primary={t.nav[key]} />
             </ListItemButton>
           ))}
-          {user?.role === 'admin' && (
+          {isAdminRole(user?.role) && (
             <>
               <Divider sx={{ my: 1 }} />
-              <ListSubheader>Admin Panel</ListSubheader>
-              <ListItemButton
-                component={NextLink}
-                href="/admin"
-                onClick={toogleSideMenu}
-                sx={{ minHeight: 52 }}>
-                <ListItemIcon>
-                  <Dashboard />
-                </ListItemIcon>
-                <ListItemText primary={'Módulo de Administración'} />
-              </ListItemButton>
+              <ListSubheader>{t.nav.adminPanel}</ListSubheader>
+              {[
+                { href: '/admin', icon: <Dashboard />, label: t.nav.adminHome },
+                { href: '/admin/content', icon: <Tune />, label: t.nav.siteContent },
+                { href: '/admin#researchers', icon: <Groups />, label: t.admin.researchers },
+                { href: '/admin#groups', icon: <Science />, label: t.admin.groups },
+                { href: '/admin#projects', icon: <Assignment />, label: t.admin.projects },
+                { href: '/admin#stories', icon: <Article />, label: t.admin.stories },
+              ].map(({ href, icon, label }) => (
+                <ListItemButton
+                  key={href}
+                  component={NextLink}
+                  href={href}
+                  onClick={toogleSideMenu}
+                  sx={{ minHeight: 52 }}>
+                  <ListItemIcon>{icon}</ListItemIcon>
+                  <ListItemText primary={label} />
+                </ListItemButton>
+              ))}
             </>
           )}
         </List>
@@ -97,18 +110,18 @@ export const SideMenu = () => {
               <ListItemIcon>
                 <LogoutOutlined />
               </ListItemIcon>
-              <ListItemText primary={'Salir'} />
+              <ListItemText primary={t.nav.logout} />
             </ListItemButton>
           ) : (
             <ListItemButton
               component={NextLink}
-              href={`/auth/login?p=${asPath}`}
+              href={`/auth/login?p=${encodeURIComponent(asPath)}`}
               onClick={toogleSideMenu}
               sx={{ minHeight: 56 }}>
               <ListItemIcon>
                 <LoginOutlined />
               </ListItemIcon>
-              <ListItemText primary={'Ingresar'} />
+              <ListItemText primary={t.nav.login} />
             </ListItemButton>
           )}
         </Box>

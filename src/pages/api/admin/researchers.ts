@@ -1,12 +1,29 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { IResearcher } from '@/interfaces';
-import { Researcher } from '@/models';
+import { Group, Researcher } from '@/models';
 import { db } from '@/database';
 import { isValidObjectId } from 'mongoose';
+import { requireAdmin } from '@/utils/requireAdmin';
+import { pick } from '@/utils';
+
+/** The only fields an admin request may write (code, _id and timestamps are server-owned). */
+const FIELDS = [
+  'imageUrl',
+  'name',
+  'lastName',
+  'type',
+  'email',
+  'cvlacUrl',
+  'isShowed',
+  'category',
+  'role',
+  'en',
+];
 
 type Data = { message: string } | IResearcher[] | IResearcher;
 
-export default function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
+  if (!(await requireAdmin(req, res))) return;
   switch (req.method) {
     case 'GET':
       return getResearchers(req, res);
@@ -45,7 +62,7 @@ const updateResearchers = async (req: NextApiRequest, res: NextApiResponse<Data>
       await db.disconnect();
       return res.status(400).json({ message: 'No existe un investigador con este ID' });
     }
-    await researcher.updateOne(req.body);
+    await researcher.updateOne(pick(req.body, FIELDS), { runValidators: true });
     await db.disconnect();
     return res.status(200).json({ message: 'Investigador actualizado exitosamente' });
   } catch (error) {
@@ -63,19 +80,7 @@ const createResearcher = async (req: NextApiRequest, res: NextApiResponse<Data>)
       await db.disconnect();
       return res.status(400).json({ message: 'Ya existe un investigador con ese id' });
     }
-    const { imageUrl, name, lastName, type, email, cvlacUrl, isShowed, category, role } = req.body;
-    const researcher = new Researcher({
-      code: crypto.randomUUID(),
-      imageUrl,
-      name,
-      lastName,
-      type,
-      email,
-      cvlacUrl,
-      isShowed,
-      category,
-      role,
-    });
+    const researcher = new Researcher({ code: crypto.randomUUID(), ...pick(req.body, FIELDS) });
     await researcher.save();
     await db.disconnect();
     return res.status(201).json({ message: 'Investigador creado exitosamente' });
@@ -98,6 +103,9 @@ const deleteResearcher = async (req: NextApiRequest, res: NextApiResponse<Data>)
       await db.disconnect();
       return res.status(400).json({ message: 'No existe un investigador con este ID' });
     }
+    // Keep groups consistent: drop the person from members and director.
+    await Group.updateMany({ members: id }, { $pull: { members: id } });
+    await Group.updateMany({ director: id }, { director: null });
     await db.disconnect();
     return res.status(200).json({ message: 'Investigador eliminado exitosamente' });
   } catch (error) {

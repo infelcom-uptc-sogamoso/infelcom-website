@@ -1,5 +1,7 @@
 import { FC } from 'react';
 import { OpenInNew } from '@mui/icons-material';
+import { useT } from '@/i18n/useT';
+import { inLocale } from '@/i18n/locale';
 import styles from './Researchers.module.css';
 
 interface Props {
@@ -7,14 +9,15 @@ interface Props {
 }
 
 export const ResearcherCard: FC<Props> = ({ researcher }) => {
+  const { t, locale } = useT();
   const {
     imageUrl,
-    name = 'Nombre(s)',
-    lastName = 'Apellido(s)',
-    type = 'Descripción',
-    email = 'Correo electrónico',
+    name = t.admin.form.name,
+    lastName = t.admin.form.lastName,
+    email = t.admin.form.email,
     cvlacUrl = '',
   } = researcher;
+  const type = inLocale(researcher, 'type', locale) || t.admin.form.description;
 
   return (
     <article className={styles.card}>
@@ -34,7 +37,7 @@ export const ResearcherCard: FC<Props> = ({ researcher }) => {
       </a>
       {cvlacUrl && (
         <a href={cvlacUrl} target="_blank" rel="noopener noreferrer" className={styles.cvlac}>
-          Ver CvLAC <OpenInNew fontSize="inherit" aria-hidden />
+          {t.researchers.cvlac} <OpenInNew fontSize="inherit" aria-hidden />
         </a>
       )}
     </article>

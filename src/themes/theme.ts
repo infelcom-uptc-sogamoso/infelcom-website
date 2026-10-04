@@ -1,5 +1,5 @@
 import { Poppins } from 'next/font/google';
-import { createTheme } from '@mui/material/styles';
+import { experimental_extendTheme as extendTheme } from '@mui/material/styles';
 
 // Self-hosted by next/font: no render-blocking request to Google Fonts.
 const poppins = Poppins({
@@ -11,8 +11,33 @@ const poppins = Poppins({
 // Keep in sync with the CSS variables in src/styles/globals.css
 const ink = '#222222';
 const teal = '#0a7d84';
+const tealBright = '#33cccc';
 
-export const lightTheme = createTheme({
+/**
+ * Light + dark palettes as CSS variables. CssVarsProvider (src/pages/_app.tsx) switches them
+ * with the `data-mui-color-scheme` attribute on <html>, which globals.css also keys off.
+ */
+export const theme = extendTheme({
+  colorSchemes: {
+    light: {
+      palette: {
+        primary: { main: teal, dark: '#075f65', light: tealBright, contrastText: '#ffffff' },
+        secondary: { main: '#5D6363', contrastText: '#ffffff' },
+        text: { primary: ink, secondary: '#5D6363' },
+        background: { default: '#ffffff', paper: '#ffffff' },
+        divider: '#e3e8e8',
+      },
+    },
+    dark: {
+      palette: {
+        primary: { main: tealBright, dark: teal, light: '#7fe0e0', contrastText: '#0b1214' },
+        secondary: { main: '#b3b2ae', contrastText: '#15181b' },
+        text: { primary: '#e8ecec', secondary: '#a9b1b1' },
+        background: { default: '#0f1214', paper: '#171b1e' },
+        divider: 'rgba(255, 255, 255, 0.12)',
+      },
+    },
+  },
   shape: { borderRadius: 12 },
   typography: {
     fontFamily: `${poppins.style.fontFamily}, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif`,
@@ -26,14 +51,6 @@ export const lightTheme = createTheme({
     subtitle2: { fontSize: '1.125rem', fontWeight: 600 },
     body1: { lineHeight: 1.65 },
     button: { textTransform: 'none', fontWeight: 600 },
-  },
-  palette: {
-    mode: 'light',
-    primary: { main: teal, dark: '#075f65', light: '#33cccc', contrastText: '#ffffff' },
-    secondary: { main: '#5D6363', contrastText: '#ffffff' },
-    info: { main: ink, contrastText: '#ffffff' },
-    text: { primary: ink, secondary: '#5D6363' },
-    background: { default: '#ffffff' },
   },
   components: {
     MuiLink: {
@@ -59,13 +76,16 @@ export const lightTheme = createTheme({
     MuiCard: {
       defaultProps: { elevation: 0 },
       styleOverrides: {
-        root: { border: '1px solid #e3e8e8', borderRadius: 16 },
+        root: { border: '1px solid var(--mui-palette-divider)', borderRadius: 16 },
       },
     },
     MuiButtonBase: {
       styleOverrides: {
         root: {
-          '&.Mui-focusVisible': { outline: `3px solid ${teal}`, outlineOffset: 2 },
+          '&.Mui-focusVisible': {
+            outline: '3px solid var(--mui-palette-primary-main)',
+            outlineOffset: 2,
+          },
         },
       },
     },

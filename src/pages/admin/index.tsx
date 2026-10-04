@@ -1,304 +1,222 @@
-import { useContext } from 'react';
+import { useEffect } from 'react';
 import NextLink from 'next/link';
-import { UiContext } from '@/contexts';
-import useSWR, { mutate } from 'swr';
-import { Box, Button, Divider, Grid, IconButton, Tooltip, Typography } from '@mui/material';
-import { AddOutlined, CategoryOutlined } from '@mui/icons-material';
-import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
-import { IProject, IResearcher, IStory } from '@/interfaces';
-import { AdminLayout } from '@/components/layouts';
-import { infelcomApi } from '@/infelcomApis';
+import { useRouter } from 'next/router';
+import useSWR from 'swr';
+import {
+  Alert,
+  Box,
+  Button,
+  Card,
+  CardActions,
+  CardContent,
+  IconButton,
+  Tooltip,
+  Typography,
+} from '@mui/material';
+import { AddOutlined, CategoryOutlined, Tune } from '@mui/icons-material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
+import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
+import { enUS, esES } from '@mui/x-data-grid/locales';
+import { IGroup, IProject, IResearcher, IStory } from '@/interfaces';
+import { AdminLayout } from '@/components/layouts';
+import { useNotice } from '@/components/admin/useNotice';
+import { apiErrorMessage, infelcomApi } from '@/infelcomApis';
+import { useT } from '@/i18n/useT';
 import { formatDate } from '@/utils';
 
-const ResearchersPage = () => {
-  const { toogleSnackbar } = useContext(UiContext);
-  const { data: researchersData } = useSWR<IResearcher[]>('/api/admin/researchers', {
-    revalidateOnFocus: false,
-    revalidateOnReconnect: false,
-    refreshInterval: 0,
-  });
-  const { data: storiesData } = useSWR<IStory[]>('/api/admin/stories', {
-    revalidateOnFocus: false,
-    revalidateOnReconnect: false,
-    refreshInterval: 0,
-  });
-  const { data: projectsData } = useSWR<IProject[]>('/api/admin/projects', {
-    revalidateOnFocus: false,
-    revalidateOnReconnect: false,
-    refreshInterval: 0,
-  });
+type Entity = 'researchers' | 'groups' | 'projects' | 'stories';
 
-  const deleteResearcher = async (id: String) => {
+const swrOptions = { revalidateOnFocus: false, revalidateOnReconnect: false };
+
+const AdminPage = () => {
+  const { t, locale } = useT();
+  const { notify, notice } = useNotice();
+  const router = useRouter();
+  const researchers = useSWR<IResearcher[]>('/api/admin/researchers', swrOptions);
+  const projects = useSWR<IProject[]>('/api/admin/projects', swrOptions);
+  const stories = useSWR<IStory[]>('/api/admin/stories', swrOptions);
+  const groups = useSWR<IGroup[]>('/api/admin/groups', swrOptions);
+  const lists = { researchers, groups, projects, stories };
+  const localeText = (locale === 'es' ? esES : enUS).components.MuiDataGrid.defaultProps.localeText;
+
+  // Edit pages redirect here with ?saved=1 after a successful save.
+  useEffect(() => {
+    if (router.query.saved !== '1') return;
+    notify({ severity: 'success', text: t.admin.saved });
+    router.replace('/admin', undefined, { shallow: true });
+  }, [router, notify, t]);
+
+  const remove = async (entity: Entity, id: string) => {
+    if (!window.confirm(t.admin.confirmDelete)) return;
     try {
-      await infelcomApi({
-        url: `/admin/researchers/?id=${id}`,
-        method: 'DELETE',
-      }).then((res) => toogleSnackbar(res.data.message));
-      mutate('/api/admin/researchers');
+      await infelcomApi.delete(`/admin/${entity}`, { params: { id } });
+      await lists[entity].mutate();
+      notify({ severity: 'success', text: t.admin.deleted });
     } catch (error) {
-      console.error(error);
+      notify({ severity: 'error', text: apiErrorMessage(error, t) });
     }
   };
 
-  const deleteProject = async (id: String) => {
-    try {
-      await infelcomApi({
-        url: `/admin/projects/?id=${id}`,
-        method: 'DELETE',
-      }).then((res) => toogleSnackbar(res.data.message));
-      mutate('/api/admin/projects');
-    } catch (error) {
-      console.error(error);
-    }
-  };
+  const actions = (entity: Entity): GridColDef => ({
+    field: 'actions',
+    headerName: t.admin.columns.actions,
+    width: 120,
+    sortable: false,
+    filterable: false,
+    renderCell: ({ row }: GridRenderCellParams) => (
+      <div className="actions-container">
+        <Tooltip title={t.common.edit}>
+          <IconButton
+            component={NextLink}
+            href={`/admin/${entity}/${row._id}`}
+            aria-label={t.common.edit}
+            color="warning">
+            <EditIcon />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title={t.common.delete}>
+          <IconButton
+            aria-label={t.common.delete}
+            color="error"
+            onClick={() => remove(entity, row._id)}>
+            <DeleteIcon />
+          </IconButton>
+        </Tooltip>
+      </div>
+    ),
+  });
 
-  const deleteStory = async (id: String) => {
-    try {
-      await infelcomApi({
-        url: `/admin/stories/?id=${id}`,
-        method: 'DELETE',
-      }).then((res) => toogleSnackbar(res.data.message));
-      mutate('/api/admin/stories');
-    } catch (error) {
-      console.error(error);
-    }
-  };
+  const date = (field: string, headerName: string): GridColDef => ({
+    field,
+    headerName,
+    minWidth: 160,
+    flex: 1,
+    renderCell: ({ row }: GridRenderCellParams) => formatDate(row[field]),
+  });
 
-  const researchersColumns: GridColDef[] = [
-    { field: 'name', minWidth: 250, headerName: 'Nombre(s)', resizable: false },
-    { field: 'lastName', minWidth: 250, headerName: 'Apellido(s)', resizable: false },
-    { field: 'email', minWidth: 350, headerName: 'Email', resizable: false },
-    { field: 'type', minWidth: 350, headerName: 'Descripción', resizable: false },
+  const sections: { entity: Entity; title: string; newLabel: string; columns: GridColDef[] }[] = [
     {
-      field: 'actions',
-      headerName: 'Acciones',
-      minWidth: 150,
-      sortable: false,
-      align: 'left',
-      resizable: false,
-      filterable: false,
-      renderCell: ({ row }: GridRenderCellParams) => {
-        return (
-          <div className="actions-container">
-            <Tooltip title="Editar">
-              <IconButton
-                component={NextLink}
-                href={`/admin/researchers/${row?._id}`}
-                aria-label="edit"
-                color="warning">
-                <EditIcon />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Eliminar">
-              <IconButton
-                aria-label="delete"
-                color="error"
-                onClick={() => deleteResearcher(row?._id)}>
-                <DeleteIcon />
-              </IconButton>
-            </Tooltip>
-          </div>
-        );
-      },
+      entity: 'researchers',
+      title: t.admin.researchers,
+      newLabel: t.admin.newResearcher,
+      columns: [
+        { field: 'name', headerName: t.admin.columns.name, minWidth: 160, flex: 1 },
+        { field: 'lastName', headerName: t.admin.columns.lastName, minWidth: 160, flex: 1 },
+        { field: 'email', headerName: t.admin.columns.email, minWidth: 220, flex: 1 },
+        { field: 'type', headerName: t.admin.columns.description, minWidth: 220, flex: 1 },
+        actions('researchers'),
+      ],
+    },
+    {
+      entity: 'groups',
+      title: t.admin.groups,
+      newLabel: t.admin.newGroup,
+      columns: [
+        { field: 'code', headerName: t.admin.columns.code, minWidth: 120 },
+        { field: 'name', headerName: t.admin.form.groupName, minWidth: 260, flex: 2 },
+        {
+          field: 'isActive',
+          headerName: t.admin.columns.status,
+          minWidth: 120,
+          renderCell: ({ row }: GridRenderCellParams) =>
+            row.isActive ? t.groups.active : t.groups.inactive,
+        },
+        actions('groups'),
+      ],
+    },
+    {
+      entity: 'projects',
+      title: t.admin.projects,
+      newLabel: t.admin.newProject,
+      columns: [
+        { field: 'title', headerName: t.admin.columns.title, minWidth: 260, flex: 2 },
+        { field: 'description', headerName: t.admin.columns.description, minWidth: 260, flex: 2 },
+        { field: 'group', headerName: t.admin.columns.group, minWidth: 160, flex: 1 },
+        actions('projects'),
+      ],
+    },
+    {
+      entity: 'stories',
+      title: t.admin.stories,
+      newLabel: t.admin.newStory,
+      columns: [
+        { field: 'title', headerName: t.admin.columns.title, minWidth: 260, flex: 2 },
+        date('createdAt', t.admin.columns.published),
+        date('updatedAt', t.admin.columns.updated),
+        actions('stories'),
+      ],
     },
   ];
-
-  const projectsColumns: GridColDef[] = [
-    { field: 'title', width: 550, headerName: 'Título' },
-    { field: 'description', width: 400, headerName: 'Descripción' },
-    { field: 'group', width: 250, headerName: 'Grupo de investigación' },
-    {
-      field: 'actions',
-      headerName: 'Acciones',
-      width: 150,
-      sortable: false,
-      renderCell: ({ row }: GridRenderCellParams) => {
-        return (
-          <div className="actions-container">
-            <Tooltip title="Editar">
-              <IconButton
-                component={NextLink}
-                href={`/admin/projects/${row?._id}`}
-                aria-label="edit"
-                color="warning">
-                <EditIcon />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Eliminar">
-              <IconButton aria-label="delete" color="error" onClick={() => deleteProject(row?._id)}>
-                <DeleteIcon />
-              </IconButton>
-            </Tooltip>
-          </div>
-        );
-      },
-    },
-  ];
-
-  const storiesColumns: GridColDef[] = [
-    { field: 'title', width: 700, headerName: 'Título' },
-    {
-      field: 'createdAt',
-      width: 250,
-      headerName: 'Fecha publicación',
-      renderCell: ({ row }: GridRenderCellParams) => {
-        return <div>{formatDate(row?.createdAt)}</div>;
-      },
-    },
-    {
-      field: 'updatedAt',
-      width: 250,
-      headerName: 'Fecha actualización',
-      renderCell: ({ row }: GridRenderCellParams) => {
-        return <div>{formatDate(row?.updatedAt)}</div>;
-      },
-    },
-    {
-      field: 'actions',
-      headerName: 'Acciones',
-      width: 150,
-      sortable: false,
-      renderCell: ({ row }: GridRenderCellParams) => {
-        return (
-          <div className="actions-container">
-            <Tooltip title="Editar">
-              <IconButton
-                component={NextLink}
-                href={`/admin/stories/${row?._id}`}
-                aria-label="edit"
-                color="warning">
-                <EditIcon />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Eliminar">
-              <IconButton aria-label="delete" color="error" onClick={() => deleteStory(row?._id)}>
-                <DeleteIcon />
-              </IconButton>
-            </Tooltip>
-          </div>
-        );
-      },
-    },
-  ];
-
-  const researchersRows = (researchersData || []).map((researcher: IResearcher) => ({
-    _id: researcher._id,
-    code: researcher.code,
-    imageUrl: researcher.imageUrl,
-    name: researcher.name,
-    lastName: researcher.lastName,
-    type: researcher.type,
-    email: researcher.email,
-    cvlacUrl: researcher.cvlacUrl,
-    isShowed: researcher.isShowed,
-    category: researcher.category,
-    role: researcher.role,
-  }));
-
-  const projectsRows = (projectsData || []).map((project: IProject) => ({
-    _id: project._id,
-    code: project.code,
-    title: project.title,
-    description: project.description,
-    image: project.image,
-    url: project.url,
-    category: project.category,
-    group: project.group,
-  }));
-
-  const storiesRows = (storiesData || []).map((story: IStory) => ({
-    _id: story._id,
-    code: story.code,
-    imageUrl: story.imageUrl,
-    title: story.title,
-    resume: story.resume,
-    content: story.content,
-    createdAt: story.createdAt,
-    updatedAt: story.updatedAt,
-  }));
 
   return (
-    <AdminLayout
-      title={'Módulo de Administración'}
-      subTitle={'Mantenimiento de contenido'}
-      icon={<CategoryOutlined />}>
-      <Box display="flex" justifyContent="space-between" sx={{ mb: 2, mt: 2 }}>
-        <Typography variant="subtitle2">
-          {researchersData && `Investigadores (${researchersData?.length})`}
-        </Typography>
-        <Button startIcon={<AddOutlined />} color="primary" href="/admin/researchers/new">
-          Nuevo investigador
-        </Button>
-      </Box>
-      <Grid container className="fadeIn">
-        <Grid item xs={12} sx={{ height: '631px', width: '100%' }}>
-          <DataGrid
-            getRowId={(row) => row.code}
-            rows={researchersRows}
-            columns={researchersColumns}
-            pageSizeOptions={[10]}
-            initialState={{
-              pagination: {
-                paginationModel: {
-                  pageSize: 10,
-                },
-              },
-            }}
-          />
-        </Grid>
-      </Grid>
-      <Divider sx={{ mt: 4 }} />
-      <Box display="flex" justifyContent="space-between" sx={{ mb: 2, mt: 4 }}>
-        <Typography variant="subtitle2">Proyectos</Typography>
-        <Button startIcon={<AddOutlined />} color="primary" href="/admin/projects/new">
-          Nuevo proyecto
-        </Button>
-      </Box>
-      <Grid container className="fadeIn">
-        <Grid item xs={12} sx={{ height: '631px', width: '100%' }}>
-          <DataGrid
-            getRowId={(row) => row.code}
-            rows={projectsRows}
-            columns={projectsColumns}
-            pageSizeOptions={[10]}
-            initialState={{
-              pagination: {
-                paginationModel: {
-                  pageSize: 10,
-                },
-              },
-            }}
-          />
-        </Grid>
-      </Grid>
-      <Divider sx={{ mt: 4 }} />
-      <Box display="flex" justifyContent="space-between" sx={{ mb: 2, mt: 4 }}>
-        <Typography variant="subtitle2">Noticias</Typography>
-        <Button startIcon={<AddOutlined />} color="primary" href="/admin/stories/new">
-          Nueva noticia
-        </Button>
-      </Box>
-      <Grid container className="fadeIn">
-        <Grid item xs={12} sx={{ height: '631px', width: '100%' }}>
-          <DataGrid
-            getRowId={(row) => row.code}
-            rows={storiesRows}
-            columns={storiesColumns}
-            pageSizeOptions={[10]}
-            initialState={{
-              pagination: {
-                paginationModel: {
-                  pageSize: 10,
-                },
-              },
-            }}
-          />
-        </Grid>
-      </Grid>
+    <AdminLayout title={t.admin.title} subTitle={t.admin.subtitle} icon={<CategoryOutlined />}>
+      <Card sx={{ mt: 2, mb: 4 }}>
+        <CardContent>
+          <Typography
+            variant="h3"
+            component="h2"
+            sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Tune /> {t.nav.siteContent}
+          </Typography>
+          <Typography sx={{ color: 'text.secondary', mt: 1 }}>{t.admin.contentCard}</Typography>
+        </CardContent>
+        <CardActions sx={{ px: 2, pb: 2 }}>
+          <Button component={NextLink} href="/admin/content" startIcon={<Tune />}>
+            {t.admin.editContent}
+          </Button>
+        </CardActions>
+      </Card>
+
+      {sections.map(({ entity, title, newLabel, columns }) => {
+        const { data, error, isLoading } = lists[entity];
+        return (
+          <Box
+            key={entity}
+            id={entity}
+            component="section"
+            sx={{ mb: 5, scrollMarginTop: 'calc(var(--header-h) + 16px)' }}>
+            <Box
+              display="flex"
+              flexWrap="wrap"
+              gap={1}
+              justifyContent="space-between"
+              alignItems="center"
+              mb={2}>
+              <Typography variant="subtitle2" component="h2">
+                {title} {data && `(${data.length})`}
+              </Typography>
+              <Button
+                startIcon={<AddOutlined />}
+                component={NextLink}
+                href={`/admin/${entity}/new`}>
+                {newLabel}
+              </Button>
+            </Box>
+            {error ? (
+              <Alert severity="error">
+                {error.status === 401 ? t.admin.unauthorized : t.admin.loadError}
+              </Alert>
+            ) : (
+              <Box sx={{ height: 631, width: '100%' }}>
+                <DataGrid
+                  getRowId={(row) => row._id}
+                  rows={data ?? []}
+                  loading={isLoading}
+                  columns={columns}
+                  localeText={localeText}
+                  pageSizeOptions={[10]}
+                  initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
+                />
+              </Box>
+            )}
+          </Box>
+        );
+      })}
+
+      {notice}
     </AdminLayout>
   );
 };
 
-export default ResearchersPage;
+export default AdminPage;

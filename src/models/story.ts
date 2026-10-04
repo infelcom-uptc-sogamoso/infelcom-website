@@ -12,6 +12,8 @@ const storySchema = new Schema(
     resume: { type: String, required: true },
     content: { type: String, required: true },
     imageUrl: { type: String, required: true },
+    // Optional English versions; empty → the Spanish field above is shown.
+    en: { title: { type: String }, resume: { type: String }, content: { type: String } },
   },
   {
     timestamps: true,

@@ -1,5 +1,6 @@
 export interface IResearcher {
   _id?: string;
+  en?: { type?: string };
   code: string;
   imageUrl: string;
   name: string;

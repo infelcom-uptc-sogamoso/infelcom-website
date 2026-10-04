@@ -1,12 +1,22 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { IProject } from '@/interfaces';
-import { Project } from '@/models';
+import { Group, Project } from '@/models';
 import { db } from '@/database';
 import { isValidObjectId } from 'mongoose';
+import { requireAdmin } from '@/utils/requireAdmin';
+import { pick } from '@/utils';
+
+/** The only fields an admin request may write (code, _id and timestamps are server-owned). */
+const FIELDS = ['title', 'description', 'image', 'url', 'category', 'group', 'en'];
 
 type Data = { message: string } | IProject[] | IProject;
 
-export default function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
+/** A project may only point to an existing group (or to none). */
+const hasValidGroup = async (body: Record<string, unknown>) =>
+  !body?.group || !!(await Group.exists({ code: String(body.group) }));
+
+export default async function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
+  if (!(await requireAdmin(req, res))) return;
   switch (req.method) {
     case 'GET':
       return getProjects(req, res);
@@ -39,12 +49,16 @@ const updateProjects = async (req: NextApiRequest, res: NextApiResponse<Data>) =
   }
   try {
     await db.connect();
+    if (!(await hasValidGroup(req.body))) {
+      await db.disconnect();
+      return res.status(400).json({ message: 'El semillero no existe' });
+    }
     const project = await Project.findById(_id);
     if (!project) {
       await db.disconnect();
       return res.status(400).json({ message: 'No existe un proyecto con este ID' });
     }
-    await project.updateOne(req.body);
+    await project.updateOne(pick(req.body, FIELDS), { runValidators: true });
     await db.disconnect();
     return res.status(200).json({ message: 'Proyecto actualizado exitosamente' });
   } catch (error) {
@@ -62,16 +76,11 @@ const createProject = async (req: NextApiRequest, res: NextApiResponse<Data>) =>
       await db.disconnect();
       return res.status(400).json({ message: 'Ya existe un proyecto con ese id' });
     }
-    const { title, description, image, url, category, group } = req.body;
-    const project = new Project({
-      code: crypto.randomUUID(),
-      title,
-      description,
-      image,
-      url,
-      category,
-      group,
-    });
+    if (!(await hasValidGroup(req.body))) {
+      await db.disconnect();
+      return res.status(400).json({ message: 'El semillero no existe' });
+    }
+    const project = new Project({ code: crypto.randomUUID(), ...pick(req.body, FIELDS) });
     await project.save();
     await db.disconnect();
     return res.status(201).json({ message: 'Proyecto creado exitosamente' });

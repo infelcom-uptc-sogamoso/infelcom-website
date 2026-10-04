@@ -104,3 +104,29 @@ nav .list {
     grid-template-columns: 1.4fr 1fr 1.4fr;
   }
 }
+
+.social {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.social a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  color: var(--gray-200);
+  font-size: 0.85rem;
+  text-decoration: none;
+}
+
+.social a:hover {
+  border-color: var(--teal-bright);
+  color: var(--teal-bright);
+}
