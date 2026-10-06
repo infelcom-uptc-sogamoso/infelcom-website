@@ -139,6 +139,9 @@ const es = {
     editContent: 'Editar contenido del sitio',
     researchers: 'Investigadores',
     newResearcher: 'Nuevo investigador',
+    importExcel: 'Importar inscripciones (.xlsx)',
+    imported: (created: number, existing: number) =>
+      `${created} investigadores creados (ocultos hasta revisarlos), ${existing} ya existían.`,
     projects: 'Proyectos',
     newProject: 'Nuevo proyecto',
     stories: 'Noticias',
@@ -435,6 +438,9 @@ const en: Messages = {
     editContent: 'Edit site content',
     researchers: 'Researchers',
     newResearcher: 'New researcher',
+    importExcel: 'Import sign-ups (.xlsx)',
+    imported: (created: number, existing: number) =>
+      `${created} researchers created (hidden until reviewed), ${existing} already existed.`,
     projects: 'Projects',
     newProject: 'New project',
     stories: 'News',
