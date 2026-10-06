@@ -13,7 +13,7 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
-import { AddOutlined, CategoryOutlined, Tune } from '@mui/icons-material';
+import { AddOutlined, CategoryOutlined, Tune, UploadFileOutlined } from '@mui/icons-material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
@@ -24,6 +24,7 @@ import { useNotice } from '@/components/admin/useNotice';
 import { apiErrorMessage, infelcomApi } from '@/infelcomApis';
 import { useT } from '@/i18n/useT';
 import { formatDate } from '@/utils';
+import { readSheet } from '@/utils/inscriptions';
 
 type Entity = 'researchers' | 'groups' | 'projects' | 'stories';
 
@@ -53,6 +54,18 @@ const AdminPage = () => {
       await infelcomApi.delete(`/admin/${entity}`, { params: { id } });
       await lists[entity].mutate();
       notify({ severity: 'success', text: t.admin.deleted });
+    } catch (error) {
+      notify({ severity: 'error', text: apiErrorMessage(error, t) });
+    }
+  };
+
+  const importSheet = async (file?: File) => {
+    if (!file) return;
+    try {
+      const rows = await readSheet(await file.arrayBuffer());
+      const { data } = await infelcomApi.post('/admin/import', { rows });
+      await Promise.all([researchers.mutate(), groups.mutate()]);
+      notify({ severity: 'success', text: t.admin.imported(data.created, data.existing) });
     } catch (error) {
       notify({ severity: 'error', text: apiErrorMessage(error, t) });
     }
@@ -186,12 +199,28 @@ const AdminPage = () => {
               <Typography variant="subtitle2" component="h2">
                 {title} {data && `(${data.length})`}
               </Typography>
-              <Button
-                startIcon={<AddOutlined />}
-                component={NextLink}
-                href={`/admin/${entity}/new`}>
-                {newLabel}
-              </Button>
+              <Box display="flex" flexWrap="wrap" gap={1}>
+                {entity === 'researchers' && (
+                  <Button component="label" variant="outlined" startIcon={<UploadFileOutlined />}>
+                    {t.admin.importExcel}
+                    <input
+                      hidden
+                      type="file"
+                      accept=".xlsx"
+                      onChange={(e) => {
+                        importSheet(e.target.files?.[0]);
+                        e.target.value = '';
+                      }}
+                    />
+                  </Button>
+                )}
+                <Button
+                  startIcon={<AddOutlined />}
+                  component={NextLink}
+                  href={`/admin/${entity}/new`}>
+                  {newLabel}
+                </Button>
+              </Box>
             </Box>
             {error ? (
               <Alert severity="error">
